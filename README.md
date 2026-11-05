@@ -74,7 +74,6 @@ ollama run qwen2.5:1.5b
 (Deja Ollama corriendo en segundo plano mientras usas la plataforma).
 
 3. Ejecutar el Frontend
-Abre una nueva terminal y navega a la carpeta del frontend:
 
 powershell
 cd Frontend-Skillmatch
