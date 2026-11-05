@@ -34,21 +34,28 @@ Sigue estos pasos para ejecutar el proyecto en tu máquina local.
 ### 1. Configurar el Backend
 
 1. Abre una terminal y navega a la carpeta del backend:
-   ```powershell
+   ```
    cd Skillmatch-main
+   ```
 Crea y activa un entorno virtual:
-
-powershell
+```
 python -m venv venv
+
+
 .\venv\Scripts\activate
+```
 Instala las dependencias:
-
-powershell
+```
 python -m pip install -r requirements.txt
-Crea un archivo .env basado en .env.example y configura tu URL de PostgreSQL:
+```
 
-env
+En tu archivo .env, de la carpeta Skillmatch-main configura tu URL de PostgreSQL:
+
+```
 DATABASE_URL=postgresql+psycopg://postgres:TU_CONTRASEÑA@localhost:5432/skillmatch_db
+```
+Cambia TU_CONTRASEÑA, por la correspondiente.
+
 Crea la base de datos en pgAdmin (llámala skillmatch_db).
 
 Ejecuta los scripts de inicialización en orden:
@@ -74,6 +81,7 @@ ollama run qwen2.5:1.5b
 (Deja Ollama corriendo en segundo plano mientras usas la plataforma).
 
 3. Ejecutar el Frontend
+Abre una nueva terminal y navega a la carpeta del frontend:
 
 powershell
 cd Frontend-Skillmatch
@@ -121,15 +129,6 @@ Limpieza semántica: El frontend traduce términos coloquiales (ej: "hojas de c�
 Cálculo del Alcance: El backend usa Sentence Transformers para comparar semánticamente las habilidades de la vacante con las de todos los aspirantes en la base de datos, determinando cuántos tienen compatibilidad "alta", "media" o "baja".
 
 Match en el Frontend: Al buscar empleos, el aspirante ve un porcentaje de compatibilidad calculado con el mismo diccionario de sinónimos y transferencia de habilidades.
+
 📄 Licencia
 Este proyecto es de uso académico y educativo. Todos los datos generados son de prueba.
-
-text
-
-### ¿Qué debes hacer ahora?
-1. Crea un archivo llamado `README.md` en la raíz de tu repositorio de GitHub.
-2. Pega el contenido de arriba.
-3. Haz `git add .`, `git commit -m "docs: README final"` y `git push`.
-4. Cuando alguien entre a tu repositorio, verá una página de presentación profesional con todos los pasos para probar tu proyecto.
-
-¡Con esto tu proyecto queda listo para ser evaluado! 🚀
