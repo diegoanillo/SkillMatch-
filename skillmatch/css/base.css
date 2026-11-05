@@ -1,0 +1,313 @@
+/* ============================================================
+   base.css  →  ESTILOS COMPARTIDOS POR TODAS LAS PANTALLAS
+   ============================================================
+   Aquí viven los colores, tipografías y piezas reutilizables
+   (botones, etiquetas, campos de texto). Cada pantalla carga este
+   archivo PRIMERO y luego el suyo propio:
+        login               → base.css + estilos.css
+        panel del aspirante → base.css + dashboard.css
+
+   Así, si mañana cambias el color ámbar o el redondeo de los botones,
+   lo cambias en UN solo lugar y toda la app se actualiza.
+   ============================================================ */
+
+
+/* ============================================================
+   1. VARIABLES (tokens de diseño)
+   Se declaran con -- y se usan con var(--nombre).
+   ============================================================ */
+:root {
+  /* --- Modo noche (por defecto) --- */
+  --bg: #0D1321;
+  --panel: #172239;
+  --panel-raised: #1E2C4A;
+  --border: #2A3A5C;
+  --text: #EDEEF2;
+  --text-muted: #8B93A7;
+  --route: #5EEAD4;                          /* cian: acción principal, progreso positivo */
+  --route-soft: rgba(94, 234, 212, 0.15);
+  --waypoint: #F2A65A;                       /* ámbar: atención, "en curso" */
+  --waypoint-soft: rgba(242, 166, 90, 0.16);
+  --gap: #F26B5B;                            /* coral: brechas y errores */
+  --gap-soft: rgba(242, 107, 91, 0.15);
+  --on-route: #0D1321;                       /* texto sobre fondo cian */
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+
+  --font-display: 'Sora', system-ui, sans-serif;
+  --font-body: 'IBM Plex Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'Courier New', monospace;
+
+  --radius-panel: 14px;
+  --radius-chip: 999px;
+}
+
+/* --- Modo día: se activa con <html data-theme="light"> --- */
+html[data-theme="light"] {
+  --bg: #F3EEE1;
+  --panel: #FFFFFF;
+  --panel-raised: #FBF8F0;
+  --border: #E2DACB;
+  --text: #1E2A28;
+  --text-muted: #6B6355;
+  --route: #2F6E62;
+  --route-soft: rgba(47, 110, 98, 0.10);
+  --waypoint: #C97A2E;
+  --waypoint-soft: rgba(201, 122, 46, 0.14);
+  --gap: #B8503D;
+  --gap-soft: rgba(184, 80, 61, 0.12);
+  --on-route: #FFFFFF;
+  --shadow: 0 16px 40px rgba(60, 50, 30, 0.18);
+}
+
+/* Si la persona nunca eligió tema, respetamos el de su sistema operativo */
+@media (prefers-color-scheme: light) {
+  html:not([data-theme]) {
+    --bg: #F3EEE1;
+    --panel: #FFFFFF;
+    --panel-raised: #FBF8F0;
+    --border: #E2DACB;
+    --text: #1E2A28;
+    --text-muted: #6B6355;
+    --route: #2F6E62;
+    --route-soft: rgba(47, 110, 98, 0.10);
+    --waypoint: #C97A2E;
+    --waypoint-soft: rgba(201, 122, 46, 0.14);
+    --gap: #B8503D;
+    --gap-soft: rgba(184, 80, 61, 0.12);
+    --on-route: #FFFFFF;
+    --shadow: 0 16px 40px rgba(60, 50, 30, 0.18);
+  }
+}
+
+/* Respeto a quien prefiere menos animaciones */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
+
+/* ============================================================
+   2. REGLAS BASE
+   ============================================================ */
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; }
+
+/* El atributo HTML "hidden" debe ganar SIEMPRE sobre cualquier "display" */
+[hidden] { display: none !important; }
+
+/* Anillo de enfoque visible al navegar con teclado (accesibilidad) */
+a:focus-visible, button:focus-visible, input:focus-visible,
+select:focus-visible, textarea:focus-visible {
+  outline: 2px solid var(--route);
+  outline-offset: 2px;
+}
+
+/* Oculto a la vista, pero disponible para lectores de pantalla */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-name {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
+}
+
+
+/* ============================================================
+   3. BOTONES
+   ============================================================ */
+
+/* Botón cuadrado con ícono (tema, notificaciones, cerrar...) */
+.icon-btn {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.icon-btn:hover { background: var(--panel-raised); }
+.icon-btn svg { width: 18px; height: 18px; }
+.icon-btn--sm { width: 30px; height: 30px; border-radius: 8px; }
+.icon-btn--sm svg { width: 15px; height: 15px; }
+
+/* Botones con texto */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  text-decoration: none;
+  line-height: 1.2;
+}
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn-block { width: 100%; padding: 13px 16px; font-size: 0.95rem; }
+
+.btn-primary { background: var(--route); color: var(--on-route); }
+.btn-primary:hover:not(:disabled) { filter: brightness(1.08); }
+
+.btn-secondary { background: transparent; color: var(--text); border-color: var(--border); }
+.btn-secondary:hover:not(:disabled) { background: var(--panel-raised); }
+
+.btn-danger { background: transparent; color: var(--gap); border-color: var(--gap); }
+.btn-danger:hover:not(:disabled) { background: var(--gap-soft); }
+
+.btn-sm { padding: 7px 13px; font-size: 0.8rem; border-radius: 9px; }
+
+
+/* ============================================================
+   4. CAMPOS DE FORMULARIO
+   ============================================================ */
+.field { margin-bottom: 16px; }
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.field input[type="text"],
+.field input[type="email"],
+.field input[type="password"],
+.field input[type="number"],
+.field select {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+}
+.field input::placeholder { color: var(--text-muted); }
+.field input[readonly] { color: var(--text-muted); background: var(--panel-raised); }
+.field input.has-error { border-color: var(--gap); }
+
+.field input[type="range"] { width: 100%; accent-color: var(--route); }
+.field-help { margin: 6px 0 0; font-size: 0.78rem; color: var(--text-muted); }
+
+/* Mensaje de error de formulario */
+.form-error {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--gap-soft);
+  color: var(--gap);
+  font-size: 0.85rem;
+}
+
+
+/* ============================================================
+   5. ETIQUETAS (chips) Y BARRAS
+   ============================================================ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 11px;
+  border-radius: var(--radius-chip);
+  font-size: 0.76rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.chip-match   { background: var(--route-soft);    color: var(--route); }       /* cumple / transferible */
+.chip-gap     { background: var(--gap-soft);      color: var(--gap); }         /* brecha */
+.chip-mid     { background: var(--waypoint-soft); color: var(--waypoint); }    /* en curso / media */
+.chip-neutral { background: var(--panel-raised);  color: var(--text-muted); border-color: var(--border); }
+
+.bar-track {
+  height: 6px;
+  border-radius: 999px;
+  background: var(--panel-raised);
+  overflow: hidden;
+}
+.bar-fill { height: 100%; border-radius: 999px; background: var(--route); }
+.bar-fill--gap { background: var(--gap); }
+.bar-fill--mid { background: var(--waypoint); }
+
+
+/* ============================================================
+   ENLACE ENTRE LOGIN Y REGISTRO
+   ("¿Ya tienes cuenta? Inicia sesión" / "¿Primera vez? Crea tu cuenta")
+   ============================================================ */
+.form-switch {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+}
+.form-switch a { color: var(--route); font-weight: 500; text-decoration: none; }
+.form-switch a:hover { text-decoration: underline; }
+
+
+/* ============================================================
+   MENSAJES EMERGENTES ("toasts")
+   ------------------------------------------------------------
+   Los crea Comun.mostrarToast(mensaje, tipo) y desaparecen solos
+   a los 4 segundos. Viven aquí porque los usan todas las pantallas.
+   ============================================================ */
+.toast-zone {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: min(360px, calc(100vw - 40px));
+  pointer-events: none;      /* el aviso no bloquea clics en lo que hay debajo */
+}
+.toast {
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--route);
+  background: var(--panel);
+  color: var(--text);
+  font-size: 0.86rem;
+  line-height: 1.4;
+  box-shadow: var(--shadow);
+  animation: toast-in 0.2s ease-out both;
+}
+.toast--error { border-color: var(--gap); }
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 780px) {
+  .toast-zone { bottom: 76px; }   /* por encima de la barra de navegación inferior */
+}

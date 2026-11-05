@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<!--
+  ============================================================
+  index.html  →  PANTALLA DE LOGIN DE SKILLMATCH
+  ============================================================
+  Este archivo es el "esqueleto" (la estructura) de la pantalla de
+  inicio de sesión. HTML solo dice QUÉ hay en la pantalla
+  (títulos, campos, botones). El aspecto (colores, tamaños) vive en
+  css/estilos.css y el comportamiento (qué pasa al hacer clic)
+  vive en js/login.js.
+
+  Se llama "index.html" porque es el nombre que los navegadores y
+  servidores buscan por defecto: será la primera página que se abre.
+-->
+<html lang="es">
+<head>
+  <!-- Codificación de caracteres: permite escribir tildes y la ñ sin problemas -->
+  <meta charset="UTF-8">
+
+  <!-- Hace que la página se adapte al ancho de un celular -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Texto que aparece en la pestaña del navegador -->
+  <title>Iniciar sesión · SkillMatch</title>
+
+  <!-- Las mismas tipografías del prototipo (Google Fonts) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Estilos: primero los compartidos (colores, botones...) y luego los propios del login.
+       El orden importa: el segundo archivo puede ajustar lo del primero. -->
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/estilos.css">
+
+  <!-- comun.js va aquí (en el head) para aplicar el tema día/noche guardado
+       ANTES de que se dibuje la página y evitar un parpadeo. -->
+  <script src="js/comun.js"></script>
+</head>
+
+<body>
+
+  <!-- <main> = el contenido principal de la página. Dentro hay 2 mitades:
+       la izquierda (mensaje + ilustración) y la derecha (formulario). -->
+  <main class="login-page">
+
+    <!-- ======================================================
+         MITAD IZQUIERDA: mensaje de bienvenida + mini "ruta"
+         aria-hidden="true" = los lectores de pantalla la ignoran,
+         porque es decoración y no contiene información esencial.
+         ====================================================== -->
+    <section class="login-aside" aria-hidden="true">
+
+      <div class="brand">
+        <!-- Ícono de brújula (el mismo del prototipo) dibujado con SVG -->
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="12" cy="12" r="9.5" stroke="#5EEAD4" stroke-width="1.6"/>
+          <path d="M15.5 8.5L13 13L8.5 15.5L11 11L15.5 8.5Z" fill="#F2A65A"/>
+        </svg>
+        <span class="brand-name">SkillMatch</span>
+      </div>
+
+      <div class="aside-message">
+        <!-- Este título y párrafo CAMBIAN según el rol elegido (lo hace login.js) -->
+        <h2 id="aside-title">Lo que puedes llegar a hacer también cuenta.</h2>
+        <p id="aside-text">Descubre oportunidades según tu potencial y recibe una ruta clara para llegar a ellas.</p>
+      </div>
+
+      <!-- Mini ilustración de una ruta con 3 paradas (igual que el Career GPS) -->
+      <svg class="aside-route" viewBox="0 0 320 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 90 C 90 90, 90 30, 160 30 S 240 30, 300 30" stroke="var(--border)" stroke-width="2" stroke-dasharray="4 6"/>
+        <path d="M20 90 C 90 90, 90 30, 160 30" stroke="var(--route)" stroke-width="2.5"/>
+        <circle cx="20" cy="90" r="8" fill="var(--route)"/>
+        <circle cx="160" cy="30" r="9" fill="var(--bg)" stroke="var(--waypoint)" stroke-width="3"/>
+        <circle cx="300" cy="30" r="8" fill="var(--bg)" stroke="var(--border)" stroke-width="2"/>
+      </svg>
+    </section>
+
+    <!-- ======================================================
+         MITAD DERECHA: el formulario de login
+         ====================================================== -->
+    <section class="login-panel">
+
+      <!-- Botón para cambiar entre modo noche y modo día -->
+      <button type="button" class="icon-btn theme-btn" id="theme-toggle" title="Cambiar a modo día" aria-label="Cambiar tema">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v1.6M12 19.4V21M4.9 4.9l1.1 1.1M18 18l1.1 1.1M3 12h1.6M19.4 12H21M4.9 19.1 6 18M18 6l1.1-1.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg>
+      </button>
+
+      <!-- <form> agrupa los campos. "novalidate" apaga los mensajes
+           automáticos del navegador para usar los nuestros (en español
+           y con el estilo de la app). -->
+      <form class="login-form" id="login-form" novalidate>
+
+        <h1>Inicia sesión</h1>
+        <p class="form-sub">Elige cómo vas a usar SkillMatch.</p>
+
+        <!-- ---------- SELECTOR DE ROL ----------
+             Usamos <input type="radio">: solo se puede elegir UNO a la vez
+             (porque todos tienen el mismo name="rol"). El <label> es la
+             "tarjeta" visible; al hacer clic en ella se marca su radio. -->
+        <fieldset class="role-switch">
+          <legend class="visually-hidden">Tipo de usuario</legend>
+
+          <!-- "checked" = viene marcado por defecto -->
+          <input type="radio" name="rol" id="rol-aspirante" value="aspirante" checked>
+          <label for="rol-aspirante">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="3.4" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 20c1.4-3.6 4.4-5.5 7.5-5.5s6.1 1.9 7.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            <span class="role-name">Aspirante</span>
+            <span class="role-desc">Busco empleo</span>
+          </label>
+
+          <input type="radio" name="rol" id="rol-reclutador" value="reclutador">
+          <label for="rol-reclutador">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="12" rx="1.8" stroke="currentColor" stroke-width="1.6"/><path d="M8 8V6.5A2.5 2.5 0 0 1 10.5 4h3A2.5 2.5 0 0 1 16 6.5V8" stroke="currentColor" stroke-width="1.6"/></svg>
+            <span class="role-name">Reclutador</span>
+            <span class="role-desc">Busco talento</span>
+          </label>
+        </fieldset>
+
+        <!-- ---------- CAMPO: CORREO ---------- -->
+        <div class="field">
+          <label for="email">Correo electrónico</label>
+          <!-- autocomplete ayuda al navegador a sugerir el correo guardado -->
+          <input type="email" id="email" name="email" placeholder="tucorreo@ejemplo.com" autocomplete="email" required>
+        </div>
+
+        <!-- ---------- CAMPO: CONTRASEÑA (con botón "mostrar") ---------- -->
+        <div class="field">
+          <label for="password">Contraseña</label>
+          <div class="password-wrap">
+            <input type="password" id="password" name="password" placeholder="Tu contraseña" autocomplete="current-password" required>
+            <button type="button" class="show-pass" id="show-pass" aria-label="Mostrar contraseña">Mostrar</button>
+          </div>
+        </div>
+
+        <!-- Aquí JavaScript escribirá los errores ("Contraseña incorrecta").
+             role="alert" hace que los lectores de pantalla lo anuncien. -->
+        <p class="form-error" id="form-error" role="alert" hidden></p>
+
+        <!-- type="submit" = al pulsarlo, se dispara el evento "submit" del formulario -->
+        <button type="submit" class="btn btn-primary btn-block" id="submit-btn">Entrar como aspirante</button>
+
+        <!-- Enlace al registro. login.js le agrega ?rol=... según el rol elegido,
+             así el registro ya abre con el mismo tipo de usuario. -->
+        <p class="form-switch">¿Aún no tienes cuenta? <a href="registro.html" id="link-registro">Crear cuenta</a></p>
+
+        <!-- Ayuda temporal para probar: la quitaremos cuando exista el backend real -->
+        <div class="demo-hint">
+          <p><strong>Cuentas de prueba</strong> (contraseña: <code>123456</code>)</p>
+          <p>Aspirante: <code>maria@skillmatch.com</code></p>
+          <p>Reclutador: <code>reclutador@skillmatch.com</code></p>
+        </div>
+
+      </form>
+    </section>
+  </main>
+
+  <!-- Los scripts van al FINAL del body: así, cuando se ejecutan, el HTML
+       de arriba ya existe y JavaScript puede encontrar los elementos.
+       El ORDEN importa: cada archivo usa lo que definió el anterior.
+         1. diccionario.js → el vocabulario de habilidades (sinónimos, familias)
+         2. datos-demo.js  → los datos de prueba (usa el diccionario)
+         3. api.js         → la capa de servicios (usa los datos)
+         4. login.js       → la pantalla (usa la capa de servicios) -->
+  <script src="js/diccionario.js"></script>
+  <script src="js/datos-demo.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>

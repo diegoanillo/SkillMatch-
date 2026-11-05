@@ -1,0 +1,135 @@
+/* ============================================================
+   probador.css  →  ESTILOS DEL LABORATORIO DE PRUEBAS
+   ============================================================
+   Los colores, botones, chips y barras vienen de base.css (se
+   carga primero). Aquí solo está la disposición propia de esta
+   página. Las clases empiezan con "pb-" (de "probador") para no
+   mezclarse con las de otras pantallas.
+   ============================================================ */
+
+.pb-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border);
+}
+.pb-header h1 { font-family: var(--font-display); font-size: 1.3rem; margin: 0 0 2px; }
+.pb-header p  { margin: 0; color: var(--text-muted); font-size: 0.85rem; }
+
+/* Dos columnas en pantallas grandes; una sola en pantallas angostas */
+.pb-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 20px;
+  padding: 24px 32px 60px;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: start;
+}
+.pb-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+
+@media (max-width: 900px) {
+  .pb-grid { grid-template-columns: 1fr; padding: 16px; }
+  .pb-header { padding: 16px; }
+}
+
+.pb-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-panel);
+  padding: 22px;
+}
+.pb-panel h2 { font-family: var(--font-display); font-size: 1.02rem; margin: 0 0 4px; }
+.pb-sub  { margin: 0 0 16px; color: var(--text-muted); font-size: 0.82rem; }
+.pb-help { margin: 4px 0 0; color: var(--text-muted); font-size: 0.76rem; }
+
+/* ---------- Controles de formulario ---------- */
+.pb-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.pb-label { font-size: 0.82rem; color: var(--text-muted); flex-shrink: 0; }
+
+.pb-select, .pb-textarea, .pb-num {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel-raised);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+}
+.pb-select { flex: 1; padding: 9px 12px; min-width: 0; }
+.pb-textarea { width: 100%; padding: 12px 14px; resize: vertical; line-height: 1.5; }
+.pb-textarea[hidden] { display: none; }
+.pb-num { width: 64px; padding: 6px 8px; text-align: center; }
+
+.pb-actions { display: flex; align-items: center; gap: 12px; margin: 12px 0 4px; }
+.pb-actions[hidden] { display: none; }
+.pb-status { font-size: 0.8rem; color: var(--text-muted); }
+
+/* ---------- Lo que detectó el análisis ---------- */
+.pb-detected { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--border); }
+.pb-summary  { font-size: 0.85rem; margin: 0 0 10px; }
+
+.pb-meta { display: flex; flex-wrap: wrap; gap: 14px; align-items: center; margin-bottom: 12px; font-size: 0.82rem; color: var(--text-muted); }
+.pb-meta label { display: inline-flex; align-items: center; gap: 6px; }
+
+.pb-warn {
+  margin: 0 0 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--waypoint-soft);
+  color: var(--waypoint);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+
+.pb-skill {
+  display: grid;
+  grid-template-columns: 1fr auto auto auto auto;   /* nombre | origen | nivel | obligatoria | quitar */
+  align-items: center;
+  gap: 10px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pb-skill:last-child { border-bottom: none; }
+.pb-skill-name { font-size: 0.88rem; font-weight: 500; }
+.pb-skill-evidence { display: block; font-size: 0.74rem; color: var(--text-muted); font-weight: 400; margin-top: 2px; }
+.pb-check { display: inline-flex; align-items: center; gap: 5px; font-size: 0.76rem; color: var(--text-muted); white-space: nowrap; }
+
+@media (max-width: 560px) {
+  .pb-skill { grid-template-columns: 1fr auto auto; }
+  .pb-skill > .pb-skill-name { grid-column: 1 / -1; }
+}
+
+/* ---------- Resultado ---------- */
+.pb-score { display: flex; align-items: center; gap: 22px; margin-bottom: 14px; flex-wrap: wrap; }
+.pb-score-num { font-family: var(--font-mono); font-size: 3rem; font-weight: 600; line-height: 1; color: var(--route); }
+.pb-score-num small { font-size: 1.3rem; }
+.pb-score-num.is-mid { color: var(--waypoint); }
+.pb-score-num.is-low { color: var(--gap); }
+
+.pb-minibars { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 10px; }
+.pb-minibar-top { display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 4px; }
+
+.pb-detail { display: flex; flex-direction: column; margin-top: 8px; }
+.pb-detail-row { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.pb-detail-row:last-child { border-bottom: none; }
+.pb-detail-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+.pb-detail-name { font-weight: 600; font-size: 0.9rem; }
+.pb-detail-levels { font-family: var(--font-mono); font-size: 0.74rem; color: var(--text-muted); }
+.pb-detail-text { margin: 6px 0 0; font-size: 0.8rem; color: var(--text-muted); line-height: 1.45; }
+
+/* ---------- Ajustes ---------- */
+.pb-slider { margin-bottom: 18px; }
+.pb-slider label { font-size: 0.84rem; }
+.pb-slider input[type="range"] { width: 100%; accent-color: var(--route); margin-top: 8px; }
+
+/* ---------- Ranking ---------- */
+.pb-rank-row { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--border); }
+.pb-rank-row:last-child { border-bottom: none; }
+.pb-rank-row.is-mine { background: var(--route-soft); border-radius: 10px; padding-left: 8px; padding-right: 8px; border-bottom: none; margin-bottom: 4px; }
+.pb-rank-num { font-family: var(--font-mono); font-weight: 600; font-size: 1.05rem; }
+.pb-rank-title { font-size: 0.86rem; font-weight: 500; }
+.pb-rank-sub { display: block; font-size: 0.74rem; color: var(--text-muted); font-weight: 400; }
+
+.pb-empty { color: var(--text-muted); font-size: 0.85rem; margin: 0; padding: 8px 0; }

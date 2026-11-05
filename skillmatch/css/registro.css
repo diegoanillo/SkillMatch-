@@ -1,0 +1,197 @@
+/* ============================================================
+   registro.css  →  ESTILOS PROPIOS DEL ASISTENTE DE REGISTRO
+   ============================================================
+   Los colores, botones, chips y campos vienen de base.css; el
+   diseño de 2 columnas y el selector de rol, de estilos.css.
+   Aquí solo está lo exclusivo de esta pantalla. Las clases
+   empiezan con "reg-" (de "registro") para no mezclarse con otras.
+   ============================================================ */
+
+/* El panel derecho del login centra un formulario angosto; aquí
+   necesitamos más ancho y que el contenido pueda ser más alto que
+   la pantalla (por eso alineamos arriba y dejamos desplazar). */
+.login-panel { align-items: flex-start; padding-top: 72px; padding-bottom: 48px; }
+.reg-wrap { width: 100%; max-width: 520px; }
+
+h1:focus { outline: none; }   /* el título recibe foco al cambiar de paso, sin mostrar recuadro */
+
+
+/* ============================================================
+   1. INDICADOR DE PROGRESO (stepper)
+   ============================================================ */
+.stepper {
+  list-style: none;
+  margin: 0 0 28px;
+  padding: 0;
+  display: flex;
+  gap: 8px;
+}
+.stepper-item {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+/* La barrita de cada paso: gris = pendiente, cian = hecho, ámbar = actual */
+.stepper-bar { height: 4px; border-radius: 999px; background: var(--border); }
+.stepper-item.is-done .stepper-bar { background: var(--route); }
+.stepper-item.is-current .stepper-bar { background: var(--waypoint); }
+.stepper-item.is-current { color: var(--text); font-weight: 600; }
+.stepper-label { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+
+/* ============================================================
+   2. CAMPOS EXTRA
+   ============================================================ */
+.opcional { color: var(--text-muted); font-weight: 400; }
+
+/* Dos campos en una fila (se apilan en celular) */
+.field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .field-pair { grid-template-columns: 1fr; gap: 0; } }
+
+/* base.css da estilo a input y select; los textarea los estilizamos aquí */
+.reg-step textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.5;
+  resize: vertical;
+}
+.reg-step textarea::placeholder { color: var(--text-muted); }
+
+.reg-step select:focus-visible, .reg-step textarea:focus-visible { outline: 2px solid var(--route); outline-offset: 2px; }
+
+/* Pastillas de reglas de contraseña */
+.pass-rules { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+
+/* Mensaje bajo el correo: verde si está libre, coral si ya existe */
+.field-help.is-ok { color: var(--route); }
+.field-help.is-error { color: var(--gap); }
+
+
+/* ============================================================
+   3. PASO DE HABILIDADES
+   ============================================================ */
+.reg-box {
+  border: 1px solid var(--border);
+  background: var(--panel);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+.reg-box-title { display: block; font-family: var(--font-display); font-weight: 600; font-size: 0.9rem; margin: 0 0 8px; }
+.reg-box textarea, .reg-search {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel-raised);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+}
+.reg-box-actions { display: flex; align-items: center; gap: 12px; margin-top: 10px; }
+.estado-texto { font-size: 0.8rem; color: var(--text-muted); }
+
+.reg-aviso {
+  margin: 10px 0 0;
+  padding: 9px 12px;
+  border-radius: 10px;
+  background: var(--waypoint-soft);
+  color: var(--waypoint);
+  font-size: 0.8rem;
+  line-height: 1.45;
+}
+.reg-aviso.is-ok { background: var(--route-soft); color: var(--route); }
+
+/* Sugerencias de la búsqueda: pastillas que se pueden pulsar */
+.sugerencias { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; min-height: 8px; }
+.chip-btn { cursor: pointer; border: 1px solid var(--border); font-family: var(--font-body); }
+.chip-btn:hover { border-color: var(--route); color: var(--route); }
+.chip-btn:focus-visible { outline: 2px solid var(--route); outline-offset: 2px; }
+.chip-btn--nueva { border-style: dashed; }
+
+.reg-selected-head { margin: 22px 0 8px; }
+.reg-selected-head h2 { font-family: var(--font-display); font-size: 1rem; margin: 0 0 4px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.contador { font-family: var(--font-body); font-size: 0.76rem; font-weight: 500; padding: 3px 10px; border-radius: 999px; background: var(--waypoint-soft); color: var(--waypoint); }
+.contador.is-ok { background: var(--route-soft); color: var(--route); }
+
+.reg-empty { margin: 0; padding: 18px 0; text-align: center; color: var(--text-muted); font-size: 0.86rem; }
+
+/* Cada habilidad elegida */
+.reg-skill { padding: 12px 0; border-bottom: 1px solid var(--border); }
+.reg-skill:last-child { border-bottom: none; }
+.reg-skill-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.reg-skill-name { font-weight: 600; font-size: 0.92rem; margin-right: auto; }
+.reg-skill-level { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
+.reg-skill-level input[type="range"] { flex: 1; accent-color: var(--route); min-width: 0; }
+.reg-skill-level output { font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted); min-width: 112px; text-align: right; }
+.reg-skill-cat { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 0.78rem; color: var(--text-muted); }
+.reg-skill-cat select { padding: 5px 8px; border-radius: 8px; border: 1px solid var(--border); background: var(--panel); color: var(--text); font-size: 0.8rem; }
+
+
+/* ============================================================
+   4. PASO DE META: rutas y vista previa
+   ============================================================ */
+.rutas { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
+
+/* Igual que el selector de rol: el radio real está oculto y el label es la tarjeta */
+.ruta input { position: absolute; opacity: 0; pointer-events: none; }
+.ruta label {
+  display: block;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+.ruta label:hover { background: var(--panel-raised); }
+.ruta input:checked + label { border-color: var(--route); background: var(--route-soft); }
+.ruta input:focus-visible + label { outline: 2px solid var(--route); outline-offset: 2px; }
+.ruta-titulo { display: block; font-weight: 600; font-size: 0.92rem; }
+.ruta-desc { display: block; font-size: 0.8rem; color: var(--text-muted); margin-top: 2px; }
+
+.preview-row { display: grid; grid-template-columns: 56px 1fr auto; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.preview-row:last-child { border-bottom: none; }
+.preview-num { font-family: var(--font-mono); font-weight: 600; font-size: 1.1rem; color: var(--route); }
+.preview-num.is-mid { color: var(--waypoint); }
+.preview-num.is-low { color: var(--gap); }
+.preview-title { font-size: 0.88rem; font-weight: 500; }
+.preview-sub { display: block; font-size: 0.76rem; color: var(--text-muted); font-weight: 400; }
+
+
+/* ============================================================
+   5. BOTONES DE NAVEGACIÓN Y PANTALLA FINAL
+   ============================================================ */
+.reg-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 22px; }
+.reg-nav .btn-primary { margin-left: auto; min-width: 150px; }
+.reg-nav [hidden] { display: none; }
+
+.reg-success { text-align: center; padding-top: 12px; }
+.reg-success[hidden] { display: none; }
+.reg-success-icon { width: 60px; height: 60px; margin: 0 auto 18px; border-radius: 50%; display: grid; place-items: center; background: var(--route-soft); color: var(--route); }
+.reg-success-icon svg { width: 28px; height: 28px; }
+.reg-success h1 { font-family: var(--font-display); font-size: 1.6rem; margin: 0 0 8px; }
+.reg-success .form-sub { margin-bottom: 20px; }
+.reg-success a.btn { text-decoration: none; margin-top: 18px; }
+
+.reg-best { text-align: left; padding: 14px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--panel); }
+.reg-best-label { font-size: 0.76rem; color: var(--text-muted); margin: 0 0 6px; }
+
+[hidden] { display: none !important; }   /* "hidden" siempre debe ganar sobre cualquier display */
+
+
+/* Borde rojo también en listas desplegables y áreas de texto con error
+   (base.css solo lo define para los <input>) */
+.reg-step select.has-error,
+.reg-step textarea.has-error,
+.reg-search.has-error { border-color: var(--gap); }

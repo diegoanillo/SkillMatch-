@@ -1,0 +1,118 @@
+/* ============================================================
+   reclutador.css  →  ESTILOS PROPIOS DEL PANEL DEL RECLUTADOR
+   ============================================================
+   El armazón (barras lateral y superior), los paneles, las tarjetas de
+   oferta, las barras, las pastillas y los campos vienen de base.css y
+   aspirante.css (se cargan antes). Aquí solo está lo exclusivo de este
+   panel: la vista "Publicar vacante" y detalles de "Mis vacantes".
+   ============================================================ */
+
+/* ---------- Mis vacantes ---------- */
+.vac-barra { margin: -4px 0 18px; }
+/* Con 0 postulantes el número va en gris (no en rojo: no es una alarma) */
+.vac-card .job-match-num.is-low { color: var(--text-muted); }
+
+/* ---------- Publicar vacante: indicador de pasos ---------- */
+.pub-pasos { list-style: none; display: flex; gap: 8px; margin: 0 0 20px; padding: 0; flex-wrap: wrap; }
+.pub-pasos li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px 7px 8px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+.pub-paso-num {
+  width: 22px; height: 22px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--panel-raised);
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+}
+.pub-pasos li.is-current { color: var(--text); border-color: var(--waypoint); }
+.pub-pasos li.is-current .pub-paso-num { background: var(--waypoint); color: #0D1321; }
+.pub-pasos li.is-done { color: var(--route); border-color: transparent; }
+.pub-pasos li.is-done .pub-paso-num { background: var(--route); color: #0D1321; }
+
+.panel + .panel { margin-top: 20px; }
+.panel h2:focus { outline: none; }
+
+/* ---------- Etapa 1: describir ---------- */
+.pub-ejemplos { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 16px; }
+.pub-textarea, .pub-form select, .pub-form textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+.pub-textarea, .pub-form textarea { resize: vertical; }
+.pub-textarea::placeholder, .pub-form textarea::placeholder { color: var(--text-muted); }
+.pub-form select.has-error, .pub-form textarea.has-error, .pub-textarea.has-error { border-color: var(--gap); }
+.pub-acciones { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 18px; }
+
+/* ---------- Etapa 2: revisar ---------- */
+.pub-resumen-ia { margin: 0 0 6px; font-size: 0.88rem; line-height: 1.5; }
+
+.pub-hab {
+  display: grid;
+  grid-template-columns: minmax(150px, 1.2fr) minmax(170px, 1fr) auto auto;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 0;
+  border-bottom: 1px solid var(--border);
+}
+.pub-hab:last-child { border-bottom: none; }
+.pub-hab-main { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+/* Por qué el sistema propuso esta habilidad (la "IA explicable" aplicada a la vacante) */
+.pub-evidencia { flex-basis: 100%; font-size: 0.76rem; color: var(--text-muted); line-height: 1.4; }
+@media (max-width: 860px) {
+  .pub-hab { grid-template-columns: 1fr auto; gap: 8px 12px; }
+  .pub-hab-main { grid-column: 1 / -1; }
+  .pub-hab .hab-level { grid-column: 1 / -1; order: 3; }
+}
+
+/* ---------- Alcance estimado ---------- */
+.pub-alcance { transition: opacity 0.2s ease; }
+.pub-alcance.is-actualizando { opacity: 0.55; }     /* mientras se recalcula */
+.pub-alcance-resumen { margin: 0 0 14px; font-size: 0.92rem; line-height: 1.5; }
+.pub-alcance-fila { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; margin-bottom: 10px; font-size: 0.84rem; }
+.pub-alcance-fila strong { font-family: var(--font-mono); }
+.pub-alcance-fila .bar-track { grid-column: 1 / -1; }
+
+/* ---------- Etapa 3: publicada ---------- */
+.pub-exito { text-align: center; padding: 36px 24px; }
+.pub-exito h2 { font-size: 1.4rem; margin: 0 0 10px; }
+.pub-exito-texto { margin: 0 auto 10px; max-width: 56ch; font-size: 0.92rem; line-height: 1.55; color: var(--text-muted); }
+.pub-exito-texto strong { color: var(--text); }
+.reg-success-icon { width: 60px; height: 60px; margin: 0 auto 16px; border-radius: 50%; display: grid; place-items: center; background: var(--route-soft); color: var(--route); }
+.reg-success-icon svg { width: 28px; height: 28px; }
+
+
+/* ============================================================
+   PUNTO 11: candidatos y gestión de vacantes
+   ============================================================ */
+.vac-card .job-actions { flex-direction: column; align-items: stretch; }
+.vac-card .job-actions a.btn { text-align: center; }
+.job-card.is-cerrada { opacity: 0.65; }          /* vacante cerrada o candidato descartado */
+
+/* Tarjeta de candidato: sus bloques extra ocupan todo el ancho, debajo */
+.cand-card > .cand-contacto, .cand-card > .cand-detalle { grid-column: 1 / -1; }
+.cand-card .job-actions { flex-direction: column; align-items: stretch; min-width: 150px; }
+.cand-mensaje { margin: 10px 0 0; padding: 10px 12px; border-radius: 10px; background: var(--panel-raised); font-size: 0.84rem; line-height: 1.5; }
+.cand-contacto { margin-top: 4px; padding-top: 16px; border-top: 1px solid var(--border); }
+.cand-contacto .reg-box-title { display: block; margin: 0 0 4px; font-family: var(--font-display); font-weight: 600; font-size: 0.9rem; }
+.cand-detalle { margin-top: 4px; padding-top: 18px; border-top: 1px solid var(--border); }
+.cand-sobre { margin: 0 0 16px; font-size: 0.88rem; line-height: 1.55; color: var(--text-muted); }
+.cand-sobre strong { color: var(--text); }
+@media (max-width: 780px) { .cand-card .job-actions, .vac-card .job-actions { flex-direction: row; flex-wrap: wrap; } }
+
+/* La respuesta del candidato, resaltada junto al mensaje que se le envió */
+.cand-respuesta { border-left: 3px solid var(--route); }

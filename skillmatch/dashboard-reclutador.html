@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+
+  <!--
+    ============================================================
+    dashboard-reclutador.html  →  EL PANEL DEL RECLUTADOR
+    ============================================================
+    Es la pantalla donde cae una persona después de iniciar sesión
+    (o de crear su cuenta) como RECLUTADOR.
+
+    Usa el mismo armazón que el panel del aspirante: una barra
+    lateral, una barra superior y "vistas" (una <section> por opción
+    del menú), de las cuales se ve una a la vez.
+
+         Vista              Archivo                       Estado
+         Mis vacantes       js/reclutador-vacantes.js     ✔ listo (puntos 10 y 11)
+         Publicar vacante   js/reclutador-publicar.js     ✔ listo (punto 10)
+         Candidatos         js/reclutador-candidatos.js   ✔ listo (punto 11)
+
+    El armazón (js/reclutador.js) se encarga de lo común: proteger la
+    pantalla (solo reclutadores), cargar los datos, cambiar de vista,
+    el saludo y el menú de usuario. Cada vista solo dibuja lo suyo.
+
+    Estilos: base.css (colores y componentes) + aspirante.css (el armazón y
+    las piezas que comparten los dos paneles) + reclutador.css (lo propio de aquí).
+  -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mis vacantes · SkillMatch</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/aspirante.css">
+  <link rel="stylesheet" href="css/reclutador.css">
+
+  <!-- Va en el <head> para aplicar el tema guardado antes de dibujar (evita parpadeo) -->
+  <script src="js/comun.js"></script>
+</head>
+
+<body>
+
+  <!-- ============================================================
+       BARRA LATERAL: navegación entre vistas
+       data-vista="nombre" coincide con el id "vista-nombre" de la sección.
+       ============================================================ -->
+  <nav class="sidebar" aria-label="Navegación principal">
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="9.5" stroke="#5EEAD4" stroke-width="1.6"/>
+        <path d="M15.5 8.5L13 13L8.5 15.5L11 11L15.5 8.5Z" fill="#F2A65A"/>
+      </svg>
+      <span class="brand-name">SkillMatch</span>
+    </div>
+
+    <ul class="nav-list">
+      <li>
+        <button type="button" class="nav-item" data-vista="vacantes">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><rect x="3" y="8" width="18" height="12" rx="1.8" stroke="currentColor" stroke-width="1.6"/><path d="M8 8V6.5A2.5 2.5 0 0 1 10.5 4h3A2.5 2.5 0 0 1 16 6.5V8" stroke="currentColor" stroke-width="1.6"/></svg>
+          <span>Mis vacantes</span>
+        </button>
+      </li>
+      <li>
+        <button type="button" class="nav-item" data-vista="publicar">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none"><rect x="3.5" y="3.5" width="17" height="17" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M12 8v8M8 12h8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span>Publicar vacante</span>
+        </button>
+      </li>
+    </ul>
+
+  </nav>
+
+
+  <div class="main">
+
+    <!-- ============================================================
+         BARRA SUPERIOR: saludo + tema + menú de usuario
+         ============================================================ -->
+    <header class="topbar">
+      <div class="topbar-greeting">
+        <h2 class="greeting-title" id="saludo">Hola</h2>
+        <p class="greeting-sub" id="saludo-sub"></p>
+      </div>
+
+      <div class="topbar-actions">
+        <button type="button" class="icon-btn" id="theme-toggle" title="Cambiar a modo día" aria-label="Cambiar tema">
+          <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v1.6M12 19.4V21M4.9 4.9l1.1 1.1M18 18l1.1 1.1M3 12h1.6M19.4 12H21M4.9 19.1 6 18M18 6l1.1-1.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg>
+        </button>
+
+        <!-- Notificaciones: botón + panel desplegable (nuevas postulaciones, respuestas de candidatos) -->
+        <div class="dropdown-wrap">
+          <button type="button" class="icon-btn" id="notif-toggle" title="Notificaciones" aria-label="Notificaciones" aria-expanded="false" aria-haspopup="true" aria-controls="notif-panel">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 10a6 6 0 1 1 12 0c0 4 1.4 5.2 1.4 5.2H4.6S6 14 6 10Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke="currentColor" stroke-width="1.6"/></svg>
+            <span class="notif-dot" id="notif-dot" aria-hidden="true" hidden></span>
+          </button>
+          <div class="dropdown notif-panel" id="notif-panel" hidden>
+            <div class="notif-head">
+              <p class="notif-title">Notificaciones</p>
+              <button type="button" class="link-btn" id="notif-todas">Marcar todas como leídas</button>
+            </div>
+            <div id="notif-lista"></div>
+          </div>
+        </div>
+
+        <!-- Menú del usuario: avatar + cerrar sesión -->
+        <div class="dropdown-wrap">
+          <button type="button" class="avatar" id="avatar-btn" aria-label="Menú de usuario" aria-expanded="false" aria-haspopup="true" aria-controls="menu-usuario">--</button>
+
+          <div class="dropdown menu-usuario" id="menu-usuario" hidden>
+            <div class="menu-head">
+              <p class="menu-nombre" id="menu-nombre"></p>
+              <p class="menu-email" id="menu-email"></p>
+            </div>
+            <button type="button" class="menu-item menu-item--danger" id="menu-salir">Cerrar sesión</button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+
+    <main class="view-area" id="contenido">
+
+      <!-- Mensaje de error general (si no se pudieron cargar los datos) -->
+      <div class="panel panel-error" id="error-carga" hidden>
+        <h2>No pudimos cargar tus datos</h2>
+        <p id="error-carga-texto"></p>
+        <button type="button" class="btn btn-primary btn-sm" id="reintentar">Reintentar</button>
+      </div>
+
+      <!-- ======================================================
+           VISTA: MIS VACANTES  (js/reclutador-vacantes.js la rellena)
+           ====================================================== -->
+      <section class="view" id="vista-vacantes" aria-labelledby="h-vacantes" hidden>
+        <div class="view-heading">
+          <h1 id="h-vacantes">Mis vacantes</h1>
+          <p>Las vacantes que has publicado y cuántas personas se han postulado a cada una.</p>
+        </div>
+        <div id="vacantes-contenido"><p class="cargando">Cargando tus vacantes…</p></div>
+      </section>
+
+      <!-- ======================================================
+           VISTA: PUBLICAR VACANTE  (js/reclutador-publicar.js la rellena)
+           ====================================================== -->
+      <section class="view" id="vista-publicar" aria-labelledby="h-publicar" hidden>
+        <div class="view-heading">
+          <h1 id="h-publicar">Publicar vacante</h1>
+          <p>Cuéntanos qué necesitas con tus palabras. Nosotros proponemos las habilidades y tú las revisas antes de publicar.</p>
+        </div>
+        <div id="publicar-contenido"></div>
+      </section>
+
+      <!-- ======================================================
+           VISTA: CANDIDATOS DE UNA VACANTE  (js/reclutador-candidatos.js la rellena)
+           Se llega desde "Mis vacantes": dashboard-reclutador.html#candidatos/j1
+           ====================================================== -->
+      <section class="view" id="vista-candidatos" aria-labelledby="h-candidatos" hidden>
+        <div class="view-heading">
+          <h1 id="h-candidatos">Candidatos</h1>
+          <p>Las personas que se postularon, ordenadas por compatibilidad con la vacante, y por qué.</p>
+        </div>
+        <div id="candidatos-contenido"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Orden de carga: cada archivo usa lo que cargó el anterior
+         1-5. Vocabulario, datos de práctica, motor de compatibilidad, análisis de texto y Api
+         6.   aspirante-ui.js      → piezas de dibujo compartidas (confirmación en dos pasos, foco...)
+         7.   reclutador.js        → el armazón (sesión, menú, navegación)
+         8.   reclutador-*.js      → una vista por archivo; se registran en el armazón
+       El armazón arranca cuando la página termina de cargar, así que las
+       vistas ya están registradas aunque se carguen después de él. -->
+  <script src="js/diccionario.js"></script>
+  <script src="js/datos-demo.js"></script>
+  <script src="js/matching.js"></script>
+  <script src="js/analisis.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/aspirante-ui.js"></script>
+  <script src="js/reclutador.js"></script>
+  <script src="js/reclutador-vacantes.js"></script>
+  <script src="js/reclutador-publicar.js"></script>
+  <script src="js/reclutador-candidatos.js"></script>
+</body>
+</html>

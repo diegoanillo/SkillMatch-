@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+
+  <!--
+    ============================================================
+    probador.html  →  LABORATORIO DE PRUEBAS (herramienta de desarrollo)
+    ============================================================
+    Esta página NO forma parte de la app final. Sirve para probar
+    juntos el análisis de texto (analisis.js) y el motor de
+    compatibilidad (matching.js) sin tener que construir antes las
+    pantallas definitivas:
+  
+       1. Escribe (o elige) el texto de una vacante  → "Analizar vacante"
+       2. Elige un perfil, o escribe uno en texto libre → "Analizar perfil"
+       3. Corrige lo detectado (nivel, obligatoria, quitar)
+       4. Mira el porcentaje y POR QUÉ salió así
+  
+    No pide iniciar sesión y no guarda nada.
+  -->
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Laboratorio de matching · SkillMatch</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/probador.css">
+</head>
+<body>
+
+  <header class="pb-header">
+    <div>
+      <h1>Laboratorio de matching</h1>
+      <p>Herramienta de desarrollo: prueba el análisis de texto y el cálculo de compatibilidad.</p>
+    </div>
+    <button type="button" class="icon-btn" id="theme-toggle" title="Cambiar tema" aria-label="Cambiar tema">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 3v1.6M12 19.4V21M4.9 4.9l1.1 1.1M18 18l1.1 1.1M3 12h1.6M19.4 12H21M4.9 19.1 6 18M18 6l1.1-1.1" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="12" r="4.2" stroke="currentColor" stroke-width="1.6"/></svg>
+    </button>
+  </header>
+
+  <main class="pb-grid">
+
+    <!-- ======================================================
+         COLUMNA IZQUIERDA: entradas (vacante y perfil)
+         ====================================================== -->
+    <div class="pb-col">
+
+      <!-- ---------- 1. VACANTE ---------- -->
+      <section class="pb-panel" aria-labelledby="t-vacante">
+        <h2 id="t-vacante">1. La vacante</h2>
+        <p class="pb-sub">Escribe como lo haría un reclutador, sin formato especial.</p>
+
+        <div class="pb-row">
+          <label for="ejemplo-vacante" class="pb-label">Ejemplos</label>
+          <select id="ejemplo-vacante" class="pb-select">
+            <option value="0">Servicios generales (texto mínimo)</option>
+            <option value="1">Auxiliar de bodega (con lista de requisitos)</option>
+            <option value="2">Analista de datos (con niveles y deseables)</option>
+            <option value="3">Mesero (texto corto)</option>
+          </select>
+        </div>
+
+        <textarea id="texto-vacante" class="pb-textarea" rows="5" aria-label="Texto de la vacante"></textarea>
+
+        <div class="pb-actions">
+          <button type="button" class="btn btn-primary" id="btn-vacante">Analizar vacante</button>
+          <span class="pb-status" id="estado-vacante" role="status"></span>
+        </div>
+
+        <!-- Aquí se dibuja el resultado del análisis -->
+        <div id="detectado-vacante"></div>
+      </section>
+
+      <!-- ---------- 2. PERFIL ---------- -->
+      <section class="pb-panel" aria-labelledby="t-perfil">
+        <h2 id="t-perfil">2. El perfil de la persona</h2>
+        <p class="pb-sub">Usa el perfil de María o describe a otra persona.</p>
+
+        <div class="pb-row">
+          <label for="ejemplo-perfil" class="pb-label">Perfil</label>
+          <select id="ejemplo-perfil" class="pb-select">
+            <option value="maria">María (perfil de demostración)</option>
+            <option value="aseo">Persona con experiencia en aseo</option>
+            <option value="mesero">Persona con experiencia como mesero</option>
+            <option value="libre">Escribir uno propio…</option>
+          </select>
+        </div>
+
+        <textarea id="texto-perfil" class="pb-textarea" rows="4" aria-label="Texto del perfil" hidden></textarea>
+
+        <div class="pb-actions" id="acciones-perfil" hidden>
+          <button type="button" class="btn btn-primary" id="btn-perfil">Analizar perfil</button>
+          <span class="pb-status" id="estado-perfil" role="status"></span>
+        </div>
+
+        <div id="detectado-perfil"></div>
+      </section>
+    </div>
+
+
+    <!-- ======================================================
+         COLUMNA DERECHA: resultados
+         ====================================================== -->
+    <div class="pb-col">
+
+      <!-- ---------- 3. RESULTADO ---------- -->
+      <section class="pb-panel" aria-labelledby="t-resultado">
+        <h2 id="t-resultado">3. Compatibilidad</h2>
+        <div id="resultado"></div>
+      </section>
+
+      <!-- ---------- 4. AJUSTES ---------- -->
+      <section class="pb-panel" aria-labelledby="t-ajustes">
+        <h2 id="t-ajustes">4. Afinar el algoritmo</h2>
+        <p class="pb-sub">Mueve los controles y mira cómo cambian los porcentajes (en esta página; no se guardan).</p>
+
+        <div class="pb-slider">
+          <label for="ajuste-potencial">Peso del potencial: <strong id="valor-potencial"></strong></label>
+          <input type="range" id="ajuste-potencial" min="0" max="100" step="5">
+          <p class="pb-help">0 % = solo cuenta lo que la persona ya sabe · 100 % = cuenta todo lo que podría aprender.</p>
+        </div>
+
+        <div class="pb-slider">
+          <label for="ajuste-experiencia">Penalización por cada año de experiencia que falte: <strong id="valor-experiencia"></strong></label>
+          <input type="range" id="ajuste-experiencia" min="0" max="10" step="1">
+          <p class="pb-help">0 % = la experiencia no cuenta (potencial puro).</p>
+        </div>
+
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-restablecer">Restablecer valores</button>
+      </section>
+
+      <!-- ---------- 5. RANKING ---------- -->
+      <section class="pb-panel" aria-labelledby="t-ranking">
+        <h2 id="t-ranking">5. Ranking para este perfil</h2>
+        <p class="pb-sub">Tu vacante analizada, junto a las 10 ofertas de demostración.</p>
+        <div id="ranking"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Orden de carga: cada archivo usa lo que cargó el anterior -->
+  <script src="js/diccionario.js"></script>
+  <script src="js/datos-demo.js"></script>
+  <script src="js/matching.js"></script>
+  <script src="js/analisis.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/probador.js"></script>
+</body>
+</html>

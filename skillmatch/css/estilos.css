@@ -1,0 +1,176 @@
+/* ============================================================
+   estilos.css  →  ESTILOS EXCLUSIVOS DE LA PANTALLA DE LOGIN
+   ============================================================
+   Los colores, botones y campos de texto vienen de base.css
+   (se carga primero). Aquí solo está lo que es propio del login:
+   las dos columnas, el selector de rol y el campo de contraseña.
+   ============================================================ */
+
+
+/* ============================================================
+   1. DISEÑO GENERAL: 2 columnas
+   ============================================================ */
+.login-page {
+  min-height: 100vh;
+  display: grid;                       /* CSS Grid reparte el espacio en columnas */
+  grid-template-columns: 1fr 1fr;      /* dos columnas iguales */
+}
+
+
+/* ============================================================
+   2. COLUMNA IZQUIERDA: mensaje + ilustración
+   ============================================================ */
+.login-aside {
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 40px 56px;
+  display: flex;
+  flex-direction: column;              /* apila los hijos de arriba hacia abajo */
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.aside-message h2 {
+  font-family: var(--font-display);
+  font-size: 2.1rem;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin: 0 0 14px;
+  max-width: 16ch;                     /* "ch" = ancho de un carácter: evita líneas larguísimas */
+}
+
+.aside-message p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1rem;
+  line-height: 1.6;
+  max-width: 42ch;
+}
+
+.aside-route { width: 100%; max-width: 340px; height: auto; }
+
+
+/* ============================================================
+   3. COLUMNA DERECHA: formulario
+   ============================================================ */
+.login-panel {
+  position: relative;                  /* para ubicar el botón de tema en la esquina */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+
+.theme-btn { position: absolute; top: 20px; right: 24px; }
+
+.login-form { width: 100%; max-width: 400px; }
+
+.login-form h1 {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  margin: 0 0 6px;
+}
+
+.form-sub { margin: 0 0 24px; color: var(--text-muted); font-size: 0.92rem; }
+
+
+/* ============================================================
+   4. SELECTOR DE ROL (dos tarjetas)
+   Truco: el <input type="radio"> real está oculto y estilizamos
+   el <label> que va justo después. El selector
+       input:checked + label
+   significa "el label que sigue a un radio marcado".
+   ============================================================ */
+.role-switch {
+  border: none;
+  padding: 0;
+  margin: 0 0 22px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.role-switch input { position: absolute; opacity: 0; pointer-events: none; }
+
+.role-switch label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--panel);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease;
+}
+
+.role-switch label svg { width: 20px; height: 20px; margin-bottom: 8px; }
+.role-name { font-weight: 600; font-size: 0.95rem; color: var(--text); }
+.role-desc { font-size: 0.78rem; }
+
+.role-switch label:hover { background: var(--panel-raised); }
+
+.role-switch input:checked + label {
+  border-color: var(--route);
+  background: var(--route-soft);
+  color: var(--route);
+}
+
+.role-switch input:focus-visible + label { outline: 2px solid var(--route); outline-offset: 2px; }
+
+
+/* ============================================================
+   5. CAMPO DE CONTRASEÑA (con botón "Mostrar")
+   ============================================================ */
+.password-wrap { position: relative; }
+.password-wrap input { padding-right: 84px; }     /* dejamos espacio al botón */
+
+.show-pass {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);                    /* centrado vertical exacto */
+  padding: 6px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--font-body);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+.show-pass:hover { color: var(--text); }
+
+
+/* ============================================================
+   6. CUADRO DE CUENTAS DE PRUEBA
+   ============================================================ */
+.demo-hint {
+  margin-top: 24px;
+  padding: 14px 16px;
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.demo-hint p { margin: 0; }
+.demo-hint code { font-family: 'Courier New', monospace; color: var(--text); }
+
+
+/* ============================================================
+   7. RESPONSIVE: en pantallas angostas pasamos a 1 columna
+   ============================================================ */
+@media (max-width: 860px) {
+  .login-page { grid-template-columns: 1fr; }
+
+  .login-aside {
+    padding: 20px 24px;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  .aside-message, .aside-route { display: none; }
+
+  .login-panel { padding: 56px 20px 40px; }
+}
