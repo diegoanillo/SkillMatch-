@@ -1,266 +1,342 @@
-# 🧠 SkillMatch — Inteligencia de Talento con IA
+# 🧠 SkillMatch --- Inteligencia de Talento con IA
 
-> **Conectando talento con oportunidades.**
->
-> SkillMatch es una plataforma inteligente que conecta aspirantes con vacantes laborales mediante inteligencia artificial, análisis de habilidades y similitud semántica.
+> **Conectando talento con oportunidades.**\
+> Plataforma web que conecta aspirantes con vacantes laborales mediante
+> inteligencia artificial, análisis de habilidades y similitud
+> semántica.
 
----
+------------------------------------------------------------------------
 
-## 📖 1. Descripción del proyecto
+## 📌 Tabla de contenido
 
-**SkillMatch** es una plataforma web que conecta aspirantes con vacantes laborales mediante un motor de compatibilidad basado en habilidades y similitud semántica.
+-   [Descripción del proyecto](#-descripción-del-proyecto)
+-   [Tecnologías utilizadas](#️-tecnologías-utilizadas)
+-   [Requisitos previos](#-requisitos-previos)
+-   [Instalación y ejecución](#-instalación-y-ejecución)
+-   [Cuentas de prueba](#-cuentas-de-prueba)
+-   [Funcionalidades principales](#-funcionalidades-principales)
+-   [Motor de
+    compatibilidad](#-cómo-funciona-el-motor-de-compatibilidad)
+-   [Licencia y consideraciones](#-licencia-y-consideraciones)
 
-A diferencia de los portales tradicionales de empleo, SkillMatch no se limita a evaluar los años de experiencia laboral: busca identificar el **potencial real de las personas**, considerando sus conocimientos, habilidades y posibilidades de adaptación a diferentes oportunidades laborales.
+------------------------------------------------------------------------
+
+## 📖 Descripción del proyecto
+
+**SkillMatch** es una plataforma web que conecta aspirantes con vacantes
+laborales mediante un motor de compatibilidad basado en habilidades y
+similitud semántica.
+
+A diferencia de los portales tradicionales de empleo, SkillMatch no se
+limita a evaluar los años de experiencia laboral: busca identificar el
+**potencial de las personas**, considerando sus conocimientos,
+habilidades y posibilidades de adaptación a diferentes oportunidades
+laborales.
 
 La plataforma cuenta con dos entornos principales:
 
-- 👤 **Panel de Aspirantes:** permite buscar empleos, gestionar el perfil profesional, consultar cursos y utilizar Career GPS para alcanzar objetivos laborales.
-- 🏢 **Panel de Reclutadores:** permite publicar vacantes mediante análisis de texto con IA, gestionar candidatos y establecer comunicación directa con los aspirantes.
+  -----------------------------------------------------------------------
+  Entorno                             Descripción
+  ----------------------------------- -----------------------------------
+  👤 **Panel de Aspirantes**          Permite buscar empleos, gestionar
+                                      el perfil profesional, consultar
+                                      cursos y utilizar Career GPS para
+                                      avanzar hacia objetivos laborales.
 
----
+  🏢 **Panel de Reclutadores**        Permite publicar vacantes mediante
+                                      análisis de texto con IA, gestionar
+                                      candidatos y establecer
+                                      comunicación directa con los
+                                      aspirantes.
+  -----------------------------------------------------------------------
 
-## 🛠️ 2. Tecnologías utilizadas
+------------------------------------------------------------------------
+
+## 🛠️ Tecnologías utilizadas
 
 ### Backend
 
-| Tecnología | Función |
-|---|---|
-| Python 3 | Lenguaje principal |
-| FastAPI | Desarrollo de API REST |
-| PostgreSQL | Gestión de base de datos |
-| SQLAlchemy | ORM y conexión con la base de datos |
-| Sentence Transformers | Cálculo de similitud semántica |
-| Ollama + Qwen 2.5 (1.5b) | Extracción de habilidades mediante IA |
-| Passlib + Bcrypt | Protección de contraseñas |
+  Tecnología                 Función
+  -------------------------- ---------------------------------------
+  Python 3                   Lenguaje principal
+  FastAPI                    Desarrollo de API REST
+  PostgreSQL                 Gestión de base de datos
+  SQLAlchemy                 ORM y conexión con la base de datos
+  Sentence Transformers      Cálculo de similitud semántica
+  Ollama + Qwen 2.5 (1.5b)   Extracción de habilidades mediante IA
+  Passlib + Bcrypt           Protección de contraseñas
 
 ### Frontend
 
-| Tecnología | Función |
-|---|---|
-| HTML5 | Estructura de la aplicación |
-| CSS3 | Diseño y estilos visuales |
-| JavaScript Vanilla | Lógica e interactividad |
-| Responsive Design | Adaptación a diferentes dispositivos |
-| Arquitectura modular | Organización de vistas y funcionalidades |
+  Tecnología             Función
+  ---------------------- ------------------------------------------
+  HTML5                  Estructura de la aplicación
+  CSS3                   Diseño y estilos visuales
+  JavaScript Vanilla     Lógica e interactividad
+  Responsive Design      Adaptación a diferentes dispositivos
+  Arquitectura modular   Organización de vistas y funcionalidades
 
----
+------------------------------------------------------------------------
 
-## 🚀 3. Instalación y ejecución
+## 💻 Requisitos previos
 
-A continuación, se describen los pasos necesarios para instalar y ejecutar SkillMatch en un entorno local.
+Antes de instalar el proyecto, asegúrate de contar con:
 
-### 📋 Requisitos previos
+-   **Python 3.10** o superior.
+-   **PostgreSQL**.
+-   **pgAdmin**.
+-   **Ollama**.
 
-Antes de comenzar, asegúrate de tener instaladas las siguientes herramientas:
+------------------------------------------------------------------------
 
-- Python 3.10 o superior.
-- PostgreSQL.
-- pgAdmin.
-- Ollama.
+## 🚀 Instalación y ejecución
 
-### 3.1. Configuración del Backend
+Sigue estos pasos para ejecutar SkillMatch en un entorno local.
+
+### 1. Configuración del backend
 
 **Paso 1. Ubicar la carpeta del proyecto**
 
-Abre una terminal y navega hasta la carpeta principal:
-
-```powershell
+``` powershell
 cd Skillmatch-main
-Paso 2. Crear el entorno virtual
+```
 
+**Paso 2. Crear y activar el entorno virtual**
 
-powershell
+``` powershell
 python -m venv venv
-Activa el entorno virtual:
-
-
-powershell
 .\venv\Scripts\activate
-Paso 3. Instalar las dependencias
+```
 
+**Paso 3. Instalar las dependencias**
 
-powershell
+``` powershell
 python -m pip install -r requirements.txt
-Paso 4. Configurar la conexión a PostgreSQL
+```
 
-Dentro de la carpeta Skillmatch-main, localiza o crea el archivo .env y configura la siguiente variable:
+**Paso 4. Configurar la conexión a PostgreSQL**
 
+Dentro de la carpeta `Skillmatch-main`, localiza o crea el archivo
+`.env` y agrega:
 
-env
+``` env
 DATABASE_URL=postgresql+psycopg://postgres:TU_CONTRASEÑA@localhost:5432/skillmatch_db
-Reemplaza TU_CONTRASEÑA por la contraseña correspondiente a tu usuario de PostgreSQL.
+```
 
-Paso 5. Crear la base de datos
+Reemplaza `TU_CONTRASEÑA` por la contraseña de tu usuario de PostgreSQL.
 
-Desde pgAdmin:
+**Paso 5. Crear la base de datos**
 
-Conéctate a tu servidor PostgreSQL.
+Desde **pgAdmin**:
 
-Haz clic derecho sobre Databases.
+1.  Conéctate a tu servidor PostgreSQL.
+2.  Haz clic derecho sobre **Databases**.
+3.  Selecciona **Create → Database**.
+4.  Asigna el nombre `skillmatch_db`.
 
-Selecciona Create → Database.
+**Paso 6. Ejecutar los scripts de inicialización**
 
-Asigna el nombre:
+Desde la carpeta principal del backend, ejecuta los comandos en este
+orden:
 
-
-text
-skillmatch_db
-Paso 6. Ejecutar los scripts de inicialización
-
-Ejecuta los siguientes comandos en el orden indicado:
-
-
-powershell
+``` powershell
 python seed.py
 python seed_vacantes.py
 python seed_cursos.py
 python seed_catalogos.py
-Estos scripts permiten cargar los datos iniciales del sistema.
+```
 
-Paso 7. Iniciar el servidor Backend
+Estos scripts cargan los datos iniciales del sistema.
 
+**Paso 7. Iniciar el servidor backend**
 
-powershell
+``` powershell
 python -m uvicorn app.main:app --reload
-Una vez iniciado, el backend estará disponible en:
+```
 
-API: http://127.0.0.1:8000 
+El backend estará disponible en:
 
-Documentación: http://127.0.0.1:8000/docs 
+  -----------------------------------------------------------------------
+  Recurso                             Dirección
+  ----------------------------------- -----------------------------------
+  API                                 <http://127.0.0.1:8000>
 
-3.2. Configuración de la inteligencia artificial (Ollama)
-SkillMatch utiliza Ollama junto con el modelo Qwen 2.5 (1.5b) para analizar descripciones de vacantes y extraer habilidades relevantes.
+  Documentación interactiva           <http://127.0.0.1:8000/docs>
+  -----------------------------------------------------------------------
 
-Paso 1. Descarga e instala Ollama desde su página oficial:
+### 2. Configuración de la inteligencia artificial (Ollama)
 
-https://ollama.com/ 
+SkillMatch utiliza **Ollama** junto con **Qwen 2.5 (1.5b)** para
+analizar descripciones de vacantes y extraer habilidades.
 
-Paso 2. Abre una nueva terminal y ejecuta:
+**Paso 1. Instalar Ollama**
 
+Descarga e instala Ollama desde su página oficial:
+<https://ollama.com/>.
 
-powershell
+**Paso 2. Descargar y ejecutar el modelo**
+
+Abre una nueva terminal y ejecuta:
+
+``` powershell
 ollama run qwen2.5:1.5b
-Paso 3. Espera a que el modelo termine de descargarse y quede disponible.
+```
 
-Mantén Ollama ejecutándose mientras utilizas las funcionalidades de análisis de texto de SkillMatch.
+**Paso 3. Esperar la descarga**
 
-3.3. Ejecución del Frontend
-Paso 1. Abre una nueva terminal y navega hasta la carpeta del frontend:
+Espera a que el modelo termine de descargarse y quede disponible. Mantén
+Ollama ejecutándose mientras utilizas las funcionalidades de análisis de
+texto de SkillMatch.
 
+### 3. Ejecución del frontend
 
-powershell
+**Paso 1. Abrir una nueva terminal**
+
+``` powershell
 cd Frontend-Skillmatch
-Paso 2. Inicia el servidor local:
+```
 
+**Paso 2. Iniciar el servidor local**
 
-powershell
+``` powershell
 python -m http.server 5500
-Paso 3. Abre tu navegador y accede a:
+```
 
-http://127.0.0.1:5500/index.html 
+**Paso 3. Abrir la aplicación**
 
-¡Listo! SkillMatch estará disponible para su utilización en tu entorno local.
+Accede desde tu navegador a:
 
-🔑 4. Cuentas de prueba
-El proyecto incluye dos cuentas predeterminadas para probar las funcionalidades de ambos perfiles.
+<http://127.0.0.1:5500/index.html>
 
-👤 Cuenta de Aspirante
-Correo: maria@skillmatch.com
+¡Listo! SkillMatch estará disponible en tu entorno local.
 
-Contraseña: 123456
+------------------------------------------------------------------------
 
-🏢 Cuenta de Reclutador
-Correo: reclutador@skillmatch.com
+## 🔑 Cuentas de prueba
 
-Contraseña: 123456
+El proyecto incluye dos cuentas predeterminadas para probar ambos
+perfiles:
 
-También es posible registrar nuevas cuentas desde el botón Crear cuenta, disponible en la página de inicio.
+  Tipo de cuenta   Correo                        Contraseña
+  ---------------- ----------------------------- ------------
+  👤 Aspirante     `maria@skillmatch.com`        `123456`
+  🏢 Reclutador    `reclutador@skillmatch.com`   `123456`
 
-✨ 5. Funcionalidades principales
-👤 Panel de Aspirantes
-Funcionalidad
+También es posible registrar nuevas cuentas desde el botón **Crear
+cuenta**, disponible en la página de inicio.
 
-Descripción
+> **Nota:** Las credenciales anteriores corresponden a cuentas de prueba
+> incluidas en el proyecto.
 
-Mi perfil
+------------------------------------------------------------------------
 
-Permite administrar la información personal, las habilidades profesionales y sus respectivos niveles de dominio.
+## ✨ Funcionalidades principales
 
-Buscar empleos
+### 👤 Panel de Aspirantes
 
-Visualización de vacantes con porcentajes de compatibilidad, postulaciones y ofertas guardadas.
+  -----------------------------------------------------------------------
+  Funcionalidad                       Descripción
+  ----------------------------------- -----------------------------------
+  **Mi perfil**                       Permite administrar la información
+                                      personal, las habilidades
+                                      profesionales y sus respectivos
+                                      niveles de dominio.
 
-Career GPS
+  **Buscar empleos**                  Permite visualizar vacantes con
+                                      porcentajes de compatibilidad,
+                                      gestionar postulaciones y guardar
+                                      ofertas.
 
-Permite seleccionar una meta profesional y consultar el progreso necesario para alcanzarla.
+  **Career GPS**                      Permite seleccionar una meta
+                                      profesional y consultar el progreso
+                                      necesario para alcanzarla.
 
-Recomendaciones
+  **Recomendaciones**                 Sugiere cursos y proyectos que
+                                      ayudan a cerrar las brechas de
+                                      habilidades identificadas.
 
-Sugiere cursos y proyectos que ayudan a cerrar las brechas de habilidades identificadas.
+  **Notificaciones**                  Permite recibir mensajes de
+                                      reclutadores y enviar respuestas
+                                      directamente desde la plataforma.
+  -----------------------------------------------------------------------
 
-Notificaciones
+### 🏢 Panel de Reclutadores
 
-Permite recibir mensajes de reclutadores y enviar respuestas directamente desde la plataforma.
+  -----------------------------------------------------------------------
+  Funcionalidad                       Descripción
+  ----------------------------------- -----------------------------------
+  **Mis vacantes**                    Permite visualizar y administrar
+                                      las ofertas laborales publicadas,
+                                      incluido el contador de
+                                      postulantes.
 
-🏢 Panel de Reclutadores
-Funcionalidad
+  **Publicar vacante con IA**         Permite redactar una descripción
+                                      laboral en texto libre. Qwen 2.5
+                                      extrae las habilidades y Sentence
+                                      Transformers calcula el alcance
+                                      estimado de la vacante.
 
-Descripción
+  **Gestión de candidatos**           Permite consultar perfiles y
+                                      porcentajes de compatibilidad,
+                                      preseleccionar candidatos,
+                                      contactarlos mediante mensajes o
+                                      descartarlos.
 
-Mis vacantes
+  **Notificaciones**                  Permite recibir alertas cuando un
+                                      aspirante responde a un mensaje.
+  -----------------------------------------------------------------------
 
-Visualización y administración de las ofertas laborales publicadas, incluyendo el contador de postulantes.
+------------------------------------------------------------------------
 
-Publicar vacante con IA
+## 🧠 ¿Cómo funciona el motor de compatibilidad?
 
-Permite redactar una descripción laboral en texto libre. El sistema utiliza Qwen 2.5 para extraer habilidades y Sentence Transformers para calcular el alcance estimado de la vacante.
+El motor de compatibilidad de SkillMatch identifica coincidencias entre
+las habilidades de los aspirantes y los requisitos de las vacantes. El
+proceso se desarrolla en cuatro etapas:
 
-Gestión de candidatos
+### 1. Extracción de habilidades mediante IA
 
-Permite consultar perfiles y porcentajes de compatibilidad, preseleccionar candidatos, contactarlos mediante mensajes o descartarlos.
+Cuando un reclutador publica una vacante, su descripción se envía al
+backend. Allí, **Qwen 2.5** analiza el texto libre e identifica las
+habilidades requeridas.
 
-Notificaciones
+### 2. Normalización semántica
 
-Recepción de alertas cuando un aspirante responde a un mensaje.
+El sistema utiliza un mecanismo de equivalencias para transformar
+términos coloquiales en nombres oficiales del catálogo.
 
-🧠 6. ¿Cómo funciona el motor de compatibilidad?
-Uno de los componentes principales de SkillMatch es su motor inteligente de compatibilidad, diseñado para identificar coincidencias entre las habilidades de los aspirantes y los requisitos de las vacantes.
+**Ejemplo:**
 
-El proceso se desarrolla en cuatro etapas:
+  Término original   Término normalizado
+  ------------------ ---------------------
+  Hojas de cálculo   Excel
 
-1. Extracción de habilidades mediante IA
-Cuando un reclutador publica una vacante, su descripción se envía al backend. Allí, Qwen 2.5 analiza el texto libre e identifica las habilidades requeridas.
+Esto permite reconocer habilidades equivalentes aunque se expresen con
+palabras diferentes.
 
-2. Normalización semántica
-El frontend utiliza un mecanismo de equivalencias para transformar términos coloquiales en nombres oficiales del catálogo.
+### 3. Cálculo del alcance estimado
 
-Ejemplo:
-
-Término original: Hojas de cálculo.
-
-Término normalizado: Excel.
-
-Esto permite reconocer habilidades equivalentes aunque se expresen con palabras diferentes.
-
-3. Cálculo del alcance estimado
-Sentence Transformers compara semánticamente las habilidades de la vacante con las de los aspirantes registrados en la base de datos.
+**Sentence Transformers** compara semánticamente las habilidades de la
+vacante con las de los aspirantes registrados en la base de datos.
 
 Los resultados se clasifican en tres niveles:
 
-🟢 Alta compatibilidad.
+-   🟢 **Alta compatibilidad**
+-   🟡 **Media compatibilidad**
+-   🔴 **Baja compatibilidad**
 
-🟡 Media compatibilidad.
+Así, el reclutador obtiene una referencia del número de aspirantes que
+podrían ajustarse al perfil solicitado.
 
-🔴 Baja compatibilidad.
+### 4. Cálculo del Match en el frontend
 
-De esta manera, el reclutador puede conocer el alcance estimado de su vacante y tener una referencia de cuántos aspirantes podrían ajustarse al perfil solicitado.
+Cuando un aspirante consulta las ofertas laborales, puede visualizar su
+porcentaje de compatibilidad. Este se calcula mediante el diccionario de
+sinónimos y los mecanismos de transferencia de habilidades del sistema.
 
-4. Cálculo del Match en el Frontend
-Cuando un aspirante consulta las ofertas laborales, puede visualizar su porcentaje de compatibilidad, calculado mediante el diccionario de sinónimos y los mecanismos de transferencia de habilidades del sistema.
+### 🔄 Flujo general del motor de compatibilidad
 
-🔄 Flujo general del motor de compatibilidad
-
-text
+``` text
        DESCRIPCIÓN DE LA VACANTE
                    |
                    v
@@ -285,11 +361,28 @@ text
           |        |        |
           v        v        v
          ALTA    MEDIA    BAJA
-📄 7. Licencia y consideraciones
+```
+
+------------------------------------------------------------------------
+
+## 📄 Licencia y consideraciones
+
 Este proyecto ha sido desarrollado con fines académicos y educativos.
 
-Los datos incluidos en el sistema son datos de prueba.
+-   Los datos incluidos en el sistema son datos de prueba.
+-   Las cuentas predeterminadas están destinadas a facilitar la
+    evaluación de las funcionalidades.
+-   El proyecto demuestra la aplicación de inteligencia artificial,
+    procesamiento semántico y desarrollo web en procesos de selección de
+    talento.
 
-Las cuentas predeterminadas están destinadas a facilitar la evaluación de las funcionalidades.
+------------------------------------------------------------------------
 
-El proyecto está orientado a demostrar la aplicación de inteligencia artificial, procesamiento semántico y desarrollo web en procesos de selección de talento.
+```{=html}
+<p align="center">
+```
+`<strong>`{=html}SkillMatch --- Conectando talento con
+oportunidades.`</strong>`{=html}
+```{=html}
+</p>
+```
