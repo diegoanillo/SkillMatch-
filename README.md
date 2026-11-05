@@ -116,8 +116,8 @@ python -m pip install -r requirements.txt
 
 **Paso 4. Configurar la conexión a PostgreSQL**
 
-Dentro de la carpeta `Skillmatch-main`, localiza o crea el archivo
-`.env` y agrega:
+Dentro de la carpeta `Skillmatch-main`, localiza el archivo
+`.env`:
 
 ``` env
 DATABASE_URL=postgresql+psycopg://postgres:TU_CONTRASEÑA@localhost:5432/skillmatch_db
@@ -156,8 +156,7 @@ python -m uvicorn app.main:app --reload
 
 El backend estará disponible en:
 
-  -----------------------------------------------------------------------
-  Recurso                             Dirección
+
   ----------------------------------- -----------------------------------
   API                                 <http://127.0.0.1:8000>
 
@@ -193,7 +192,7 @@ texto de SkillMatch.
 **Paso 1. Abrir una nueva terminal**
 
 ``` powershell
-cd Frontend-Skillmatch
+cd Skillmatch
 ```
 
 **Paso 2. Iniciar el servidor local**
@@ -307,9 +306,7 @@ términos coloquiales en nombres oficiales del catálogo.
 
 **Ejemplo:**
 
-  Término original   Término normalizado
-  ------------------ ---------------------
-  Hojas de cálculo   Excel
+  Hojas de cálculo  pasa a   Excel
 
 Esto permite reconocer habilidades equivalentes aunque se expresen con
 palabras diferentes.
@@ -336,7 +333,7 @@ sinónimos y los mecanismos de transferencia de habilidades del sistema.
 
 ### 🔄 Flujo general del motor de compatibilidad
 
-``` text
+``` 
        DESCRIPCIÓN DE LA VACANTE
                    |
                    v
@@ -377,12 +374,3 @@ Este proyecto ha sido desarrollado con fines académicos y educativos.
     talento.
 
 ------------------------------------------------------------------------
-
-```{=html}
-<p align="center">
-```
-`<strong>`{=html}SkillMatch --- Conectando talento con
-oportunidades.`</strong>`{=html}
-```{=html}
-</p>
-```
