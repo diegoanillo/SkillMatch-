@@ -331,6 +331,9 @@ Cuando un aspirante consulta las ofertas laborales, puede visualizar su
 porcentaje de compatibilidad. Este se calcula mediante el diccionario de
 sinónimos y los mecanismos de transferencia de habilidades del sistema.
 
+
+
+
 ### 🔄 Flujo general del motor de compatibilidad
 
 ``` 
@@ -361,6 +364,9 @@ sinónimos y los mecanismos de transferencia de habilidades del sistema.
 ```
 
 ------------------------------------------------------------------------
+
+## 💬 Chat Integrado
+La plataforma cuenta con un chat flotante en tiempo real (estilo WhatsApp) que permite a los aspirantes y reclutadores comunicarse directamente desde el detalle de la oferta o la vista de candidatos, manteniendo un historial de conversación guardado en la base de datos.
 
 ## 📄 Licencia y consideraciones
 
