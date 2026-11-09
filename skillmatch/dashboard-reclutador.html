@@ -152,6 +152,20 @@
         <div id="publicar-contenido"></div>
       </section>
 
+        <!-- VENTANA DE CHAT FLOTANTE -->
+  <div class="chat-widget" id="chat-widget" hidden>
+    <div class="chat-header">
+      <span id="chat-titulo">Chat</span>
+      <button type="button" class="icon-btn icon-btn--sm" id="chat-cerrar" aria-label="Cerrar chat">&times;</button>
+    </div>
+    <div class="chat-body" id="chat-mensajes"></div>
+    <div class="chat-footer">
+      <input type="text" id="chat-input" placeholder="Escribe un mensaje..." autocomplete="off">
+      <button type="button" class="btn btn-primary btn-sm" id="chat-enviar">Enviar</button>
+    </div>
+  </div>
+
+
       <!-- ======================================================
            VISTA: CANDIDATOS DE UNA VACANTE  (js/reclutador-candidatos.js la rellena)
            Se llega desde "Mis vacantes": dashboard-reclutador.html#candidatos/j1
@@ -181,6 +195,7 @@
   <script src="js/api.js"></script>
   <script src="js/aspirante-ui.js"></script>
   <script src="js/reclutador.js"></script>
+  <script src="js/chat.js"></script>
   <script src="js/reclutador-vacantes.js"></script>
   <script src="js/reclutador-publicar.js"></script>
   <script src="js/reclutador-candidatos.js"></script>

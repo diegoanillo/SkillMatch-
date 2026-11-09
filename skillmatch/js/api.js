@@ -91,9 +91,19 @@
   }
 
   async function emailDisponible(email) {
-    await esperar();
     const e = String(email || '').trim().toLowerCase();
-    return !leerDB().usuarios.some(function (u) { return u.email === e; });
+    if (e === '') return true;
+    
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/auth/email-disponible?email=${encodeURIComponent(e)}`);
+      if (res.ok) {
+        const data = await res.json();
+        return data.disponible;
+      }
+    } catch (error) {
+      console.warn('Error al verificar el correo:', error);
+    }
+    return true;
   }
 
   async function registrar(datos) {
@@ -114,10 +124,12 @@
       })
     });
 
-    if (!resUsuario.ok) {
+        if (!resUsuario.ok) {
       const err = await resUsuario.json();
       if (err.detail && Array.isArray(err.detail)) {
-         throw new Error(err.detail[0].msg || 'Datos inválidos.');
+         // Extraemos el mensaje del validador de Pydantic
+         const mensaje = err.detail[0].msg || 'Datos inválidos.';
+         throw new Error(mensaje);
       }
       throw new Error(err.detail || 'Error al crear el usuario.');
     }
@@ -126,7 +138,9 @@
 
     // 2. Si es ASPIRANTE, crear su perfil y habilidades
     if (datos.rol === 'aspirante') {
-      await fetch('http://127.0.0.1:8000/perfiles/', {
+      
+      // 2.1 Guardar el perfil
+      const resPerfil = await fetch('http://127.0.0.1:8000/perfiles/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -138,12 +152,31 @@
         })
       });
 
+            if (!resPerfil.ok) {
+        const errorPerfil = await resPerfil.json();
+        // Extraemos el mensaje de validación de Pydantic (que viene en un arreglo)
+        let mensaje = 'Revisa los datos de tu perfil.';
+        if (errorPerfil.detail && Array.isArray(errorPerfil.detail) && errorPerfil.detail.length > 0) {
+          mensaje = errorPerfil.detail[0].msg;
+        } else if (errorPerfil.detail) {
+          mensaje = errorPerfil.detail;
+        }
+        throw new Error(mensaje);
+      }
+
+      // 2.2 Guardar las habilidades (con try/catch para no romper el bucle)
       if (datos.perfil.habilidades && datos.perfil.habilidades.length > 0) {
         const resCat = await fetch('http://127.0.0.1:8000/habilidades/');
         const catalogo = await resCat.json();
+        
+        const guardadas = {};
 
         for (let h of datos.perfil.habilidades) {
-          let hab = catalogo.find(c => c.nombre.toLowerCase() === h.nombre.toLowerCase());
+          const clave = h.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+          
+          if (guardadas[clave]) continue;
+          
+          let hab = catalogo.find(c => c.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim() === clave);
           
           if (!hab) {
             const resNueva = await fetch('http://127.0.0.1:8000/habilidades/', {
@@ -151,30 +184,39 @@
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ nombre: h.nombre })
             });
-            hab = await resNueva.json();
+            if (resNueva.ok) {
+                hab = await resNueva.json();
+            } else {
+                const resCat2 = await fetch('http://127.0.0.1:8000/habilidades/');
+                const cat2 = await resCat2.json();
+                hab = cat2.find(c => c.nombre.toLowerCase().trim() === h.nombre.toLowerCase().trim());
+            }
           }
 
-          let nivelTexto = 'Intermedio';
-          if (h.nivel <= 3) nivelTexto = 'Básico';
-          else if (h.nivel >= 9) nivelTexto = 'Experto';
-          else if (h.nivel >= 7) nivelTexto = 'Avanzado';
+          if (hab) {
+            const resAsociar = await fetch('http://127.0.0.1:8000/habilidades/usuarios/', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                usuario_id: usuarioCreado.id,
+                habilidad_id: hab.id,
+                nivel: h.nivel // <--- Enviamos el número exacto
+              })
+            });
 
-          await fetch('http://127.0.0.1:8000/habilidades/usuarios/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              usuario_id: usuarioCreado.id,
-              habilidad_id: hab.id,
-              nivel: nivelTexto
-            })
-          });
+            if (!resAsociar.ok && resAsociar.status !== 409) {
+               console.warn('No se pudo asociar la habilidad:', h.nombre);
+            }
+          }
+          
+          guardadas[clave] = true;
         }
       }
     }
 
-     // 3. Si es RECLUTADOR, crear su empresa
+    // 3. Si es RECLUTADOR, crear su empresa
     if (datos.rol === 'reclutador') {
-      await fetch('http://127.0.0.1:8000/usuarios/empresas/', {  // <--- CORREGIDO AQUÍ
+      await fetch('http://127.0.0.1:8000/usuarios/empresas/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -230,14 +272,9 @@
 
       const habilidadesMapeadas = vacanteHabilidades.map(vh => {
         const habilidadReal = catalogo.find(c => c.id === vh.habilidad_id);
-        let nivelNum = 5;
-        if (vh.nivel_requerido === 'Básico') nivelNum = 3;
-        if (vh.nivel_requerido === 'Avanzado') nivelNum = 8;
-        if (vh.nivel_requerido === 'Experto') nivelNum = 10;
-
         return {
           nombre: habilidadReal ? habilidadReal.nombre : "Habilidad Desconocida",
-          nivel: nivelNum,
+          nivel: Number(vh.nivel_requerido) || 5,
           obligatoria: true
         };
       });
@@ -247,6 +284,7 @@
         titulo: v.titulo,
         empresa: nombreEmpresa,
         ciudad: v.ubicacion || 'No especificada',
+        empleador_id: String(v.empleador_id),
         modalidad: v.modalidad || 'Presencial',
         nivel: 'Junior', 
         sector: 'General',
@@ -329,17 +367,10 @@
       ubicacion: perfilBackend.ubicacion || '',
       sobreMi: perfilBackend.resumen_profesional || '',
       habilidades: habilidadesBackend.map(h => {
-        const nivelTexto = h.nivel || 'Intermedio';
-        let nivelNumero = 5;
-        if (nivelTexto === 'Básico') nivelNumero = 3;
-        if (nivelTexto === 'Intermedio') nivelNumero = 5;
-        if (nivelTexto === 'Avanzado') nivelNumero = 8;
-        if (nivelTexto === 'Experto') nivelNumero = 10;
-
         const habilidadReal = catalogoBackend.find(cat => cat.id === h.habilidad_id);
         const nombreReal = habilidadReal ? habilidadReal.nombre : "Habilidad Desconocida";
 
-        return { nombre: nombreReal, categoria: 'domain', nivel: nivelNumero };
+        return { nombre: nombreReal, categoria: 'domain', nivel: h.nivel || 5 };
       }),
       rutaMetaId: perfilBackend.ruta_meta_id || null,
       ofertaObjetivoId: perfilBackend.oferta_objetivo_id || null,
@@ -384,7 +415,11 @@
       })
     });
 
-    if (!respuesta.ok) {
+      if (!respuesta.ok) {
+      const err = await respuesta.json();
+      if (err.detail && Array.isArray(err.detail)) {
+         throw new Error(err.detail[0].msg || 'Datos inválidos.');
+      }
       throw new Error('No se pudieron guardar los datos en el servidor.');
     }
 
@@ -397,11 +432,6 @@
 
     const nombreHabilidad = datos.nombre.trim();
     
-    let nivelTexto = 'Intermedio';
-    if (datos.nivel <= 3) nivelTexto = 'Básico';
-    else if (datos.nivel >= 9) nivelTexto = 'Experto';
-    else if (datos.nivel >= 7) nivelTexto = 'Avanzado';
-
     const resCatalogo = await fetch('http://127.0.0.1:8000/habilidades/');
     const catalogo = await resCatalogo.json();
     let habilidadExistente = catalogo.find(h => h.nombre.toLowerCase() === nombreHabilidad.toLowerCase());
@@ -422,7 +452,7 @@
       body: JSON.stringify({
         usuario_id: parseInt(sesion.id),
         habilidad_id: habilidadExistente.id,
-        nivel: nivelTexto
+        nivel: datos.nivel // <--- Enviamos el número exacto
       })
     });
 
@@ -449,18 +479,13 @@
     const asociacion = asociaciones.find(a => a.habilidad_id === habInfo.id);
     if (!asociacion) throw new Error('No tienes esa habilidad en tu perfil.');
 
-    let nivelTexto = 'Intermedio';
-    if (nivel <= 3) nivelTexto = 'Básico';
-    else if (nivel >= 9) nivelTexto = 'Experto';
-    else if (nivel >= 7) nivelTexto = 'Avanzado';
-
     const resUpdate = await fetch(`http://127.0.0.1:8000/habilidades/usuarios/asociaciones/${asociacion.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         usuario_id: parseInt(sesion.id),
         habilidad_id: habInfo.id,
-        nivel: nivelTexto
+        nivel: nivel // <--- Enviamos el número exacto
       })
     });
 
@@ -602,7 +627,7 @@
             await actualizarHabilidad(habActual.nombre, nuevoNivel);
             cambios.push({ nombre: habActual.nombre, antes: habActual.nivel, despues: nuevoNivel });
           } else {
-             await agregarHabilidad({ nombre: h.nombre, nivel: h.boost });
+             await agregarHabilidad({ nombre: h.nombre, nivel: h.boost }); // <--- Enviamos el boost directo
              cambios.push({ nombre: h.nombre, antes: 0, despues: h.boost });
           }
         }
@@ -669,7 +694,7 @@
     return new Promise(function (resolver) { setTimeout(resolver, LATENCIA_IA_MS); });
   }
 
-    async function analizarVacante(texto) {
+  async function analizarVacante(texto) {
     const t = String(texto || '').trim();
     if (t === '') throw new Error('Escribe la descripción de la vacante para analizarla.');
     if (t.length > 5000) throw new Error('El texto es muy largo (máximo 5000 caracteres).');
@@ -740,19 +765,15 @@
     const sesion = sesionActual();
     if (!sesion) throw new Error('Tu sesión expiró.');
 
-    // 1. Pedir el nombre de la empresa del reclutador
     const resEmp = await fetch(`http://127.0.0.1:8000/usuarios/${sesion.id}/empresa`);
     const empresaData = resEmp.ok ? await resEmp.json() : { nombre: "Mi Empresa" };
 
-    // 2. Pedir todas las vacantes
     const res = await fetch('http://127.0.0.1:8000/vacantes/');
     const vacantes = res.ok ? await res.json() : [];
 
-    // 3. Pedir el catálogo de habilidades
     const resCat = await fetch('http://127.0.0.1:8000/habilidades/');
     const catalogo = resCat.ok ? await resCat.json() : [];
 
-    // 4. Filtrar las de este reclutador y contar postulantes
     const misVacantes = await Promise.all(vacantes.filter(v => v.empleador_id === parseInt(sesion.id)).map(async v => {
       
       const resHab = await fetch(`http://127.0.0.1:8000/vacantes/${v.id}/habilidades`);
@@ -764,7 +785,7 @@
       return {
         id: String(v.id),
         titulo: v.titulo,
-        empresa: empresaData.nombre, // <--- Nombre real de la empresa
+        empresa: empresaData.nombre, 
         ciudad: v.ubicacion || 'No especificada',
         modalidad: v.modalidad || 'Presencial',
         nivel: 'Junior',
@@ -775,11 +796,7 @@
         estado: v.estado ? v.estado.toLowerCase() : 'activa',
         habilidades: habs.map(h => {
           const info = catalogo.find(cat => cat.id === h.habilidad_id);
-          let nivelNum = 5;
-          if (h.nivel_requerido === 'Básico') nivelNum = 3;
-          if (h.nivel_requerido === 'Avanzado') nivelNum = 8;
-          if (h.nivel_requerido === 'Experto') nivelNum = 10;
-          return { nombre: info ? info.nombre : "Habilidad", nivel: nivelNum, obligatoria: true };
+          return { nombre: info ? info.nombre : "Habilidad", nivel: h.nivel_requerido || 5, obligatoria: true };
         }),
         postulantes: conteo.total,
         nuevos: conteo.nuevos
@@ -794,11 +811,7 @@
     if (!sesion) throw new Error('Tu sesión expiró.');
 
     const habilidadesMapeadas = datos.habilidades.map(h => {
-      let nivelTexto = 'Intermedio';
-      if (h.nivel <= 3) nivelTexto = 'Básico';
-      else if (h.nivel >= 9) nivelTexto = 'Experto';
-      else if (h.nivel >= 7) nivelTexto = 'Avanzado';
-      return { nombre: h.nombre, nivel: nivelTexto };
+      return { nombre: h.nombre, nivel: h.nivel };
     });
 
     const res = await fetch(`http://127.0.0.1:8000/vacantes/con-habilidades?empleador_id=${sesion.id}`, {
@@ -862,13 +875,7 @@
         experienciaAnios: c.experienciaAnios,
         sobreMi: c.sobreMi,
         habilidades: c.habilidades.map(h => {
-          let nivelNum = 5;
-          if (h.nivel === 'Básico') nivelNum = 3;
-          if (h.nivel === 'Intermedio') nivelNum = 5;
-          if (h.nivel === 'Avanzado') nivelNum = 8;
-          if (h.nivel === 'Experto') nivelNum = 10;
-          
-          return { nombre: h.nombre, categoria: 'domain', nivel: nivelNum };
+          return { nombre: h.nombre, categoria: 'domain', nivel: h.nivel || 5 };
         }),
         postulacion: c.postulacion
       };
@@ -911,11 +918,7 @@
     if (!sesion) throw new Error('Tu sesión expiró.');
 
     const habilidadesMapeadas = datos.habilidades.map(h => {
-      let nivelTexto = 'Intermedio';
-      if (h.nivel <= 3) nivelTexto = 'Básico';
-      else if (h.nivel >= 9) nivelTexto = 'Experto';
-      else if (h.nivel >= 7) nivelTexto = 'Avanzado';
-      return { nombre: h.nombre, nivel: nivelTexto };
+      return { nombre: h.nombre, nivel: h.nivel }; // <--- Enviamos el número directo
     });
 
     const res = await fetch('http://127.0.0.1:8000/vacantes/alcance', {
@@ -939,6 +942,37 @@
     await esperar();
     guardarDB(global.crearDatosDemo());
   }
+
+
+    // --- CHAT ---
+  async function enviarMensajeChat(destinatarioId, vacanteId, texto) {
+    const sesion = sesionActual();
+    if (!sesion) throw new Error('Tu sesión expiró.');
+
+    const res = await fetch('http://127.0.0.1:8000/chat/enviar', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        remitente_id: parseInt(sesion.id),
+        destinatario_id: parseInt(destinatarioId),
+        vacante_id: parseInt(vacanteId),
+        texto: texto
+      })
+    });
+
+    if (!res.ok) throw new Error('No se pudo enviar el mensaje.');
+    return await res.json();
+  }
+
+  async function obtenerHistorialChat(otroId, vacanteId) {
+    const sesion = sesionActual();
+    if (!sesion) throw new Error('Tu sesión expiró.');
+
+    const res = await fetch(`http://127.0.0.1:8000/chat/historial/${sesion.id}/${otroId}/${vacanteId}`);
+    if (!res.ok) throw new Error('No se pudo cargar el historial del chat.');
+    return await res.json();
+  }
+
 
   global.Api = {
     paginaPorRol: paginaPorRol,
@@ -977,6 +1011,8 @@
     estimarAlcance: estimarAlcance,
     analizarVacante: analizarVacante,
     analizarPerfil: analizarPerfil,
+    enviarMensajeChat: enviarMensajeChat,
+    obtenerHistorialChat: obtenerHistorialChat,
     reiniciarDatos: reiniciarDatos
   };
 

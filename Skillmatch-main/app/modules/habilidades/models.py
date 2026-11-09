@@ -1,4 +1,3 @@
-
 from sqlalchemy import (
     Column,
     Integer,
@@ -12,7 +11,6 @@ from app.database.connection import Base
 
 class Habilidad(Base):
     __tablename__ = "habilidades"
-
     id = Column(Integer, primary_key=True, index=True)
     nombre = Column(String(100), nullable=False, unique=True)
     descripcion = Column(String(250), nullable=True)
@@ -43,4 +41,5 @@ class UsuarioHabilidad(Base):
         nullable=False
     )
 
-    nivel = Column(String(30), nullable=True)
+    # --- CAMBIO AQUÍ: ahora es un número entero, no texto ---
+    nivel = Column(Integer, nullable=True)

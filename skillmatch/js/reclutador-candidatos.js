@@ -149,23 +149,33 @@
     return html;
   }
 
-  // Los botones dependen del estado actual de la postulación
-  function htmlAcciones(c) {
+   // Los botones dependen del estado actual de la postulación
+    function htmlAcciones(c) {
     const id = esc(c.id);
     const boton = function (estado, texto, clase) {
       return '<button type="button" class="btn ' + clase + ' btn-sm" data-accion="estado" data-estado="' + estado + '" data-id="' + id + '" data-foco="' + estado + ':' + id + '">' + texto + '</button>';
     };
-    const contactar = '<button type="button" class="btn btn-secondary btn-sm" data-accion="contactar" data-id="' + id + '" data-foco="contactar:' + id + '">Contactar</button>';
+
+        // Al hacer clic, primero actualiza el estado a "Contactado" y luego abre el chat
+const botonChat = '<button type="button" class="btn btn-secondary btn-sm" onclick="Chat.abrir(\'' + id + '\', \'' + Reclutador.parametro() + '\', \'' + esc(c.nombre.split(' ')[0]) + '\')">Chatear</button>';
 
     let html;
     switch (c.postulacion.estado) {
-      case 'Preseleccionado': html = contactar + boton('Descartado', 'Descartar', 'btn-secondary') + boton('Enviada', 'Quitar preselección', 'btn-secondary'); break;
-      case 'Contactado':      html = boton('Descartado', 'Descartar', 'btn-secondary') + boton('Enviada', 'Volver a «Nuevo»', 'btn-secondary'); break;
-      case 'Descartado':      html = boton('Enviada', 'Recuperar', 'btn-secondary'); break;
-      default:                html = boton('Preseleccionado', 'Preseleccionar', 'btn-primary') + contactar + boton('Descartado', 'Descartar', 'btn-secondary');
+      case 'Preseleccionado': 
+        html = boton('Descartado', 'Descartar', 'btn-secondary') + boton('Enviada', 'Quitar preselección', 'btn-secondary'); 
+        break;
+      case 'Contactado':      
+        html = boton('Descartado', 'Descartar', 'btn-secondary') + boton('Enviada', 'Volver a «Nuevo»', 'btn-secondary'); 
+        break;
+      case 'Descartado':      
+        html = boton('Enviada', 'Recuperar', 'btn-secondary'); 
+        break;
+      default:                
+        html = boton('Preseleccionado', 'Preseleccionar', 'btn-primary') + boton('Descartado', 'Descartar', 'btn-secondary');
     }
+    
     const abierto = !!local.abiertos[c.id];
-    return html + '<button type="button" class="btn btn-secondary btn-sm" data-accion="desglose" data-id="' + id + '" aria-expanded="' + abierto + '">' + (abierto ? 'Ocultar desglose' : 'Ver desglose') + '</button>';
+    return html + botonChat + '<button type="button" class="btn btn-secondary btn-sm" data-accion="desglose" data-id="' + id + '" aria-expanded="' + abierto + '">' + (abierto ? 'Ocultar desglose' : 'Ver desglose') + '</button>';
   }
 
   function htmlContacto(c, v) {
@@ -333,6 +343,25 @@
       else { Comun.mostrarToast(error.message, 'error'); boton.disabled = false; }
     }
   });
+
+    // Función que actualiza el estado y luego abre el chat
+  window.abrirChatYContactar = async function(aspiranteId, vacanteId, nombre) {
+    try {
+      // 1. Actualizamos el estado en la base de datos
+            await Api.cambiarEstadoPostulacion({
+        aspiranteId: aspiranteId,
+        vacanteId: vacanteId,
+        estado: 'Contactado',
+        mensaje: null 
+      });
+      // 2. Recargamos la vista para que se vea el cambio de estado
+      await Reclutador.recargar();
+    } catch (error) {
+      console.error('No se pudo actualizar el estado:', error);
+    }
+    // 3. Abrimos el chat (aunque falle el estado, el chat abre)
+    Chat.abrir(aspiranteId, vacanteId, nombre);
+  };
 
   Reclutador.registrarVista('candidatos', dibujar);
 

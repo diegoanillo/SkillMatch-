@@ -1,43 +1,13 @@
 /* ============================================================
    registro.js  →  EL "CEREBRO" DEL ASISTENTE DE REGISTRO
-   ============================================================
-   Qué hace este archivo, en orden:
-     1. Define los pasos de cada tipo de usuario.
-     2. Muestra un paso a la vez y lleva el progreso.
-     3. Valida cada paso antes de dejar avanzar.
-     4. En "Habilidades": permite contarlas con palabras propias
-        (Api.analizarPerfil, el análisis del Punto 3) o elegirlas de
-        la lista, y unifica sinónimos con Diccionario (Punto 2).
-     5. En "Tu meta": calcula compatibilidades reales con
-        Matching.rankearEmpleos (Punto 2), usando lo recién ingresado.
-     6. Al final crea la cuenta con Api.registrar(...).
-
-   REGLA DE ORO (igual que en todo el proyecto): esta pantalla NO toca
-   datos directamente. Todo lo pide a Api. Cuando exista el backend,
-   no hará falta cambiar nada aquí.
-
-   IMPORTANTE: las validaciones de aquí son solo una comodidad (avisan
-   rápido). La autoridad es SIEMPRE el backend: Api.registrar repite
-   todas las reglas, porque cualquiera podría saltarse esta pantalla.
    ============================================================ */
 
 (function () {
   'use strict';
 
-  // Atajo para buscar un elemento por su id
   const $ = function (id) { return document.getElementById(id); };
-
-  // esc() convierte texto en HTML seguro. Se usa SIEMPRE que metemos
-  // texto escrito por una persona dentro de innerHTML.
   const esc = Comun.esc;
 
-
-  // ============================================================
-  // 1. LOS PASOS DE CADA ROL Y LOS TEXTOS LATERALES
-  // ------------------------------------------------------------
-  // "id" coincide con el id de la sección en registro.html:
-  //   id: 'sobre-ti'  →  <div id="paso-sobre-ti">
-  // ============================================================
   const PASOS = {
     aspirante: [
       { id: 'cuenta',      nombre: 'Tu cuenta' },
@@ -65,21 +35,12 @@
   const MINIMO_HABILIDADES = 3;
   const MAXIMO_HABILIDADES = 30;
 
-
-  // ============================================================
-  // 2. ESTADO: lo que la persona lleva ingresado
-  // ------------------------------------------------------------
-  // Los campos de texto se leen directo del formulario cuando hace
-  // falta. Aquí solo guardamos lo que NO vive en un campo simple.
-  // ============================================================
   const estado = {
     rol: 'aspirante',
-    indice: 0,                // en qué paso va (0 = el primero)
-    habilidades: [],          // [{ nombre, categoria, nivel, origen, nueva }]
-    metaId: null,             // id de la ruta elegida (o null)
-    ocupado: false,           // true mientras se valida o se guarda (evita dobles clics)
-
-    // Datos que llegan de Api al cargar la página:
+    indice: 0,
+    habilidades: [],
+    metaId: null,
+    ocupado: false,
     catalogoHabilidades: [],
     rutas: [],
     empleos: [],
@@ -90,13 +51,6 @@
   function pasoActual() { return pasos()[estado.indice]; }
   function esUltimoPaso() { return estado.indice === pasos().length - 1; }
 
-
-  // ============================================================
-  // 3. ERRORES
-  // ------------------------------------------------------------
-  // Un error se muestra en el recuadro rojo general y, si se
-  // indica el campo, se marca ese campo y se lleva el cursor a él.
-  // ============================================================
   function limpiarError() {
     $('form-error').hidden = true;
     document.querySelectorAll('.has-error').forEach(function (e) { e.classList.remove('has-error'); });
@@ -112,10 +66,6 @@
     }
   }
 
-
-  // ============================================================
-  // 4. MOSTRAR UN PASO
-  // ============================================================
   function dibujarStepper() {
     $('stepper').innerHTML = pasos().map(function (paso, i) {
       const clase = i < estado.indice ? 'is-done' : (i === estado.indice ? 'is-current' : '');
@@ -128,64 +78,53 @@
 
   function mostrarPaso(moverFoco) {
     const actual = pasoActual();
-
-    // Mostramos solo la sección del paso actual
     document.querySelectorAll('.reg-step').forEach(function (seccion) {
       seccion.hidden = seccion.id !== 'paso-' + actual.id;
     });
 
     dibujarStepper();
-
-    // Textos de la columna izquierda según el rol
     $('aside-title').textContent = TEXTOS_LATERALES[estado.rol].titulo;
     $('aside-text').textContent = TEXTOS_LATERALES[estado.rol].texto;
-
-    // Botones: "Atrás" no aparece en el primer paso; el último dice "Crear cuenta"
     $('btn-atras').hidden = estado.indice === 0;
     $('btn-siguiente').textContent = esUltimoPaso() ? 'Crear mi cuenta' : 'Continuar';
 
     limpiarError();
 
-    // Al entrar a "Tu meta" dibujamos las rutas y la vista previa
     if (actual.id === 'meta') { dibujarRutas(); dibujarVistaPrevia(); }
     if (actual.id === 'habilidades') dibujarSeleccion();
 
     if (moverFoco) {
-      // Llevamos el foco al título del paso: así quien usa lector de pantalla
-      // sabe que cambió de sección. (try: algunos entornos no permiten scroll)
       try { window.scrollTo(0, 0); } catch (e) { /* ignorar */ }
       const titulo = document.querySelector('#paso-' + actual.id + ' h1');
       if (titulo) titulo.focus();
     }
   }
 
-
-  // ============================================================
-  // 5. VALIDACIONES (una por paso)
-  // ------------------------------------------------------------
-  // Cada una devuelve null si todo está bien, o { mensaje, campo }
-  // con el primer problema encontrado.
-  // ============================================================
   const REGEX_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  // Reglas de la contraseña (las mismas que exige Api.registrar)
   function reglasPassword(clave) {
     return { largo: clave.length >= 8, letras: /[A-Za-z]/.test(clave), numeros: /\d/.test(clave) };
   }
 
-    async function validarCuenta() {
+  async function validarCuenta() {
     const nombre = $('nombre').value.trim();
     if (nombre.length < 2) return { mensaje: 'Escribe tu nombre completo.', campo: 'nombre' };
+
+    // VALIDACIÓN ESTRICTA DEL NOMBRE (Solo letras y espacios)
+    const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    if (!soloLetras.test(nombre)) {
+      return { mensaje: 'El nombre solo puede contener letras y espacios (sin números ni símbolos).', campo: 'nombre' };
+    }
 
     const email = $('email').value.trim().toLowerCase();
     if (!REGEX_EMAIL.test(email)) return { mensaje: 'El correo no parece válido.', campo: 'email' };
     
-    // Si el correo ya existe (esto ya lo tenías)
+    // Si el correo ya existe
     if (!(await Api.emailDisponible(email))) {
       return { mensaje: 'Ya existe una cuenta con ese correo.', campo: 'email' };
     }
 
-    // VALIDACIÓN DE CONTRASEÑA (Nueva y estricta)
+    // VALIDACIÓN DE CONTRASEÑA
     const password = $('password').value;
     if (password.length < 8) {
       return { mensaje: 'La contraseña debe tener al menos 8 caracteres.', campo: 'password' };
@@ -209,7 +148,15 @@
     if (textoAnios === '' || !Number.isInteger(anios) || anios < 0 || anios > 60) {
       return { mensaje: 'Escribe tus años de experiencia como un número entero entre 0 y 60 (si no tienes, pon 0).', campo: 'experiencia' };
     }
-    if ($('ciudad-persona').value.trim() === '') return { mensaje: 'Indica tu ciudad.', campo: 'ciudad-persona' };
+
+    const ciudad = $('ciudad-persona').value.trim();
+    if (ciudad === '') return { mensaje: 'Indica tu ciudad.', campo: 'ciudad-persona' };
+    
+    // --- NUEVA VALIDACIÓN: La ciudad no puede tener números ---
+    if (/\d/.test(ciudad)) {
+      return { mensaje: 'La ciudad no puede contener números.', campo: 'ciudad-persona' };
+    }
+
     return null;
   }
 
@@ -237,16 +184,10 @@
       case 'sobre-ti':    return validarSobreTi();
       case 'habilidades': return validarHabilidades();
       case 'empresa':     return validarEmpresa();
-      default:            return null;     // "meta" es opcional
+      default:            return null;
     }
   }
 
-
-  // ============================================================
-  // 6. PASO "TU CUENTA": rol, contraseña y correo
-  // ============================================================
-
-  // Cambiar de rol cambia los pasos (4 para aspirante, 2 para reclutador)
   document.querySelectorAll('input[name="rol"]').forEach(function (radio) {
     radio.addEventListener('change', function () {
       estado.rol = radio.value;
@@ -255,7 +196,6 @@
     });
   });
 
-  // Mostrar / ocultar contraseña
   $('show-pass').addEventListener('click', function () {
     const oculta = $('password').type === 'password';
     $('password').type = oculta ? 'text' : 'password';
@@ -264,7 +204,6 @@
     this.setAttribute('aria-label', oculta ? 'Ocultar contraseña' : 'Mostrar contraseña');
   });
 
-  // Las pastillas de reglas se ponen verdes a medida que se cumplen
   $('password').addEventListener('input', function () {
     const reglas = reglasPassword(this.value);
     document.querySelectorAll('#pass-rules .chip').forEach(function (chip) {
@@ -274,31 +213,69 @@
     });
   });
 
-  // Al salir del campo de correo, avisamos si ya existe (sin bloquear)
-  $('email').addEventListener('blur', async function () {
+  // --- VALIDACIÓN DEL NOMBRE EN TIEMPO REAL ---
+  $('nombre').addEventListener('input', function () {
+    const ayuda = $('ayuda-nombre');
+    const nombre = this.value.trim();
+    
+    if (nombre === '') {
+      ayuda.textContent = '';
+      ayuda.className = 'field-help';
+      return;
+    }
+
+    const soloLetras = /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/;
+    
+    if (soloLetras.test(nombre)) {
+      ayuda.textContent = 'Nombre válido.';
+      ayuda.className = 'field-help is-ok';
+    } else {
+      ayuda.textContent = 'El nombre solo puede contener letras y espacios (sin números ni símbolos).';
+      ayuda.className = 'field-help is-error';
+    }
+  });
+  // ---------------------------------------------
+
+  // Verificar el correo MIENTRAS se escribe (con un pequeño retraso)
+  let temporizadorCorreo = null;
+  
+  $('email').addEventListener('input', function () {
     const ayuda = $('ayuda-email');
     const email = this.value.trim().toLowerCase();
+    
+    if (email === '') {
+      ayuda.textContent = '';
+      ayuda.className = 'field-help';
+      return;
+    }
+    
+    if (!REGEX_EMAIL.test(email)) {
+      ayuda.textContent = 'Revisa el formato del correo.';
+      ayuda.className = 'field-help is-error';
+      return;
+    }
+    
+    ayuda.textContent = 'Verificando...';
     ayuda.className = 'field-help';
-    if (email === '') { ayuda.textContent = ''; return; }
-    if (!REGEX_EMAIL.test(email)) { ayuda.textContent = 'Revisa el formato del correo.'; ayuda.classList.add('is-error'); return; }
-    const libre = await Api.emailDisponible(email);
-    ayuda.textContent = libre ? 'Correo disponible.' : 'Ya existe una cuenta con este correo.';
-    ayuda.classList.add(libre ? 'is-ok' : 'is-error');
+    clearTimeout(temporizadorCorreo);
+    
+    temporizadorCorreo = setTimeout(async function () {
+      if ($('email').value.trim().toLowerCase() !== email) return;
+      const libre = await Api.emailDisponible(email);
+      
+      if (libre) {
+        ayuda.textContent = 'Correo disponible.';
+        ayuda.className = 'field-help is-ok';
+      } else {
+        ayuda.textContent = 'Ya existe una cuenta con este correo.';
+        ayuda.className = 'field-help is-error';
+      }
+    }, 500);
   });
 
-
-  // ============================================================
-  // 7. PASO "HABILIDADES"
-  // ============================================================
-
-  // Texto del nivel (1-3 básico · 4-6 intermedio · 7-8 avanzado · 9-10 experto)
   const etiquetaNivel = Comun.etiquetaNivel;
-
   const NOMBRES_CATEGORIA = { technical: 'Técnica', soft: 'Blanda', domain: 'De dominio' };
 
-  // Agrega una habilidad a la lista, SIN repetir.
-  // Antes de comparar, unifica sinónimos: "MS Excel" y "Excel" son la misma.
-  // Devuelve true si la agregó, false si ya estaba o se llegó al máximo.
   function agregarHabilidad(datos) {
     const oficial = Diccionario.canonico(datos.nombre);
     const clave = Diccionario.norm(oficial);
@@ -306,7 +283,6 @@
     if (estado.habilidades.some(function (h) { return Diccionario.norm(h.nombre) === clave; })) return false;
     if (estado.habilidades.length >= MAXIMO_HABILIDADES) return false;
 
-    // ¿Existe en el catálogo? Si no, es una habilidad nueva (la categoría se puede corregir)
     const enCatalogo = estado.catalogoHabilidades.find(function (c) { return Diccionario.norm(c.nombre) === clave; });
     const categoria = enCatalogo ? enCatalogo.categoria
                     : (['technical', 'soft', 'domain'].indexOf(datos.categoria) >= 0 ? datos.categoria : 'domain');
@@ -315,13 +291,12 @@
       nombre: enCatalogo ? enCatalogo.nombre : oficial,
       categoria: categoria,
       nivel: Math.min(10, Math.max(1, Math.round(Number(datos.nivel) || 5))),
-      origen: datos.origen || 'lista',       // 'lista' | 'texto' | 'cargo' | 'frase'
+      origen: datos.origen || 'lista',
       nueva: !enCatalogo
     });
     return true;
   }
 
-  // ---------- 7.1 Contarlo con palabras propias (Api.analizarPerfil) ----------
   $('btn-detectar').addEventListener('click', async function () {
     const boton = this;
     const estadoEl = $('estado-detectar');
@@ -331,8 +306,6 @@
     boton.disabled = true;
 
     try {
-      // Api.analizarPerfil: hoy usa reglas; con el backend usará la IA real.
-      // El formato de la respuesta es el mismo (ver analisis.js).
       const r = await Api.analizarPerfil($('texto-libre').value);
 
       let agregadas = 0;
@@ -340,24 +313,32 @@
         if (agregarHabilidad({ nombre: h.nombre, categoria: h.categoria, nivel: h.nivel, origen: h.origen })) agregadas++;
       });
 
+      const vistos = {};
+      estado.habilidades = estado.habilidades.filter(function(h) {
+        const clave = h.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+        if (vistos[clave]) return false;
+        vistos[clave] = true;
+        return true;
+      });
+
+      const totalReales = estado.habilidades.length;
+
       if (agregadas > 0) {
-        avisos.innerHTML = '<p class="reg-aviso is-ok">Agregamos ' + agregadas + (agregadas === 1 ? ' habilidad' : ' habilidades') +
+        avisos.innerHTML = '<p class="reg-aviso is-ok">Agregamos ' + totalReales + 
+                           (totalReales === 1 ? ' habilidad' : ' habilidades') +
                            ' a tu lista. Revisa abajo que el nivel de cada una sea el correcto.</p>';
       }
-      // Los avisos de la IA (ej: "inferimos habilidades de tu cargo", "hay habilidades nuevas")
+      
       r.advertencias.forEach(function (a) { avisos.innerHTML += '<p class="reg-aviso">' + esc(a) + '</p>'; });
       estadoEl.textContent = '';
       dibujarSeleccion();
     } catch (error) {
       estadoEl.textContent = '';
-      avisos.innerHTML = '<p class="reg-aviso">' + esc(error.message) + '</p>';   // Api lanza mensajes listos para mostrar
+      avisos.innerHTML = '<p class="reg-aviso">' + esc(error.message) + '</p>';
     }
     boton.disabled = false;
   });
 
-  // ---------- 7.2 Buscar en la lista ----------
-  // La lógica de búsqueda (nombres y sinónimos) vive en Diccionario, compartida
-  // con la pantalla "Mi perfil".
   function nombresCatalogo() { return estado.catalogoHabilidades.map(function (c) { return c.nombre; }); }
 
   function buscarSugerencias(texto) {
@@ -385,8 +366,6 @@
 
   $('buscar-habilidad').addEventListener('input', dibujarSugerencias);
 
-  // Enter en el buscador agrega la primera opción. Sin esto, Enter enviaría
-  // el formulario y saltaría al siguiente paso por accidente.
   $('buscar-habilidad').addEventListener('keydown', function (evento) {
     if (evento.key !== 'Enter') return;
     evento.preventDefault();
@@ -394,7 +373,6 @@
     if (primera) primera.click();
   });
 
-  // Delegación de eventos: UN escuchador en el contenedor atiende todas las pastillas
   $('sugerencias').addEventListener('click', function (evento) {
     const boton = evento.target.closest('button');
     if (!boton) return;
@@ -409,7 +387,6 @@
     $('buscar-habilidad').focus();
   });
 
-  // ---------- 7.3 La lista de habilidades elegidas ----------
   function chipOrigen(h) {
     if (h.nueva) return '<span class="chip chip-mid">Nueva</span>';
     if (h.origen === 'texto') return '<span class="chip chip-match">Detectada</span>';
@@ -420,7 +397,6 @@
   function dibujarSeleccion() {
     const total = estado.habilidades.length;
 
-    // Contador: se pone verde al llegar al mínimo
     const contador = $('contador-habilidades');
     contador.textContent = total >= MINIMO_HABILIDADES ? total + (total === 1 ? ' habilidad' : ' habilidades') : total + ' de ' + MINIMO_HABILIDADES + ' mínimo';
     contador.classList.toggle('is-ok', total >= MINIMO_HABILIDADES);
@@ -433,7 +409,6 @@
     $('habilidades-elegidas').innerHTML = estado.habilidades.map(function (h, i) {
       let selectorCategoria = '';
       if (h.nueva) {
-        // A una habilidad nueva se le puede corregir la categoría
         selectorCategoria = '<label class="reg-skill-cat">Categoría ' +
           '<select data-campo="categoria" aria-label="Categoría de ' + esc(h.nombre) + '">' +
           Object.keys(NOMBRES_CATEGORIA).map(function (k) {
@@ -455,9 +430,6 @@
     }).join('');
   }
 
-  // Edición de la lista (delegación de eventos).
-  // 'input' se dispara MIENTRAS se mueve la barra: actualizamos solo el texto,
-  // sin volver a dibujar todo (así la barra no pierde el foco al arrastrar).
   $('habilidades-elegidas').addEventListener('input', function (evento) {
     if (evento.target.dataset.campo !== 'nivel') return;
     const fila = evento.target.closest('.reg-skill');
@@ -479,12 +451,7 @@
     dibujarSeleccion();
   });
 
-
-  // ============================================================
-  // 8. PASO "TU META": rutas y vista previa de coincidencias
-  // ============================================================
   function dibujarRutas() {
-    // Primera opción: "Todavía no lo sé" (value vacío). Después, las rutas del catálogo.
     let html = '<div class="ruta"><input type="radio" name="ruta" id="ruta-ninguna" value=""' + (estado.metaId === null ? ' checked' : '') + '>' +
                '<label for="ruta-ninguna"><span class="ruta-titulo">Todavía no lo sé</span>' +
                '<span class="ruta-desc">Podrás elegir una ruta más adelante desde tu panel.</span></label></div>';
@@ -502,7 +469,6 @@
   });
 
   function dibujarVistaPrevia() {
-    // Armamos un perfil "temporal" con lo ingresado hasta ahora y se lo damos al motor
     const perfil = {
       experienciaAnios: Number($('experiencia').value) || 0,
       habilidades: estado.habilidades.map(function (h) { return { nombre: h.nombre, nivel: h.nivel }; })
@@ -528,10 +494,6 @@
     }).join('');
   }
 
-
-  // ============================================================
-  // 9. CREAR LA CUENTA
-  // ============================================================
   function armarDatos() {
     const datos = {
       rol: estado.rol,
@@ -586,32 +548,24 @@
       $('exito-enlace').textContent = 'Publicar mi primera vacante';
     }
 
-    // Api.paginaPorRol dice a qué pantalla va cada rol (la sesión ya quedó iniciada)
     $('exito-enlace').href = Api.paginaPorRol[datos.rol];
     $('exito-titulo').focus();
   }
 
-    async function crearCuenta() {
+  async function crearCuenta() {
     const datos = armarDatos();
     try {
       const resultado = await Api.registrar(datos);
       mostrarExito(resultado, datos);
     } catch (error) {
-      // Si el backend rechaza algo, mostramos el mensaje en el formulario
       fallar(error.message); 
       $('btn-siguiente').textContent = 'Crear mi cuenta';
     }
   }
 
-
-  // ============================================================
-  // 10. NAVEGACIÓN: Continuar / Atrás
-  // ============================================================
-
-  // Enter en un campo, o pulsar "Continuar", envía el formulario
   $('reg-form').addEventListener('submit', async function (evento) {
     evento.preventDefault();
-    if (estado.ocupado) return;           // evita dobles clics mientras se valida o se guarda
+    if (estado.ocupado) return;
     estado.ocupado = true;
     $('btn-siguiente').disabled = true;
     limpiarError();
@@ -627,7 +581,6 @@
         } catch (error) {
           fallar(error.message);
           $('btn-siguiente').textContent = 'Crear mi cuenta';
-          // Si el problema es el correo (ej: lo registraron en otra pestaña), volvemos al primer paso
           if (/correo/i.test(error.message)) { estado.indice = 0; mostrarPaso(true); fallar(error.message, 'email'); }
         }
       } else {
@@ -644,18 +597,12 @@
     if (estado.indice > 0) { estado.indice--; mostrarPaso(true); }
   });
 
-  // Contador de caracteres de la descripción de la empresa
   $('empresa-descripcion').addEventListener('input', function () {
     $('contador-descripcion').textContent = this.value.length;
   });
 
-  // Al corregir un campo con error, le quitamos el borde rojo
   $('reg-form').addEventListener('input', function (evento) { evento.target.classList.remove('has-error'); });
 
-
-  // ============================================================
-  // 11. ARRANQUE
-  // ============================================================
   function llenarSelect(select, opciones) {
     opciones.forEach(function (op) {
       const o = document.createElement('option');
@@ -668,11 +615,9 @@
   async function iniciar() {
     Comun.vincularBotonTema($('theme-toggle'));
 
-    // Si ya hay una sesión abierta, no tiene sentido registrarse: vamos a su panel
     const sesion = Api.sesionActual();
     if (sesion) { window.location.replace(Api.paginaPorRol[sesion.rol]); return; }
 
-    // El login puede mandar el rol elegido: registro.html?rol=reclutador
     const rolUrl = new URLSearchParams(window.location.search).get('rol');
     if (rolUrl === 'aspirante' || rolUrl === 'reclutador') {
       $('rol-' + rolUrl).checked = true;
@@ -680,7 +625,6 @@
     }
     mostrarPaso(false);
 
-    // Pedimos las listas a Api. Promise.all las pide a la vez (más rápido).
     try {
       const r = await Promise.all([
         Api.getCatalogos(), Api.getCatalogoHabilidades(), Api.getEmpleos(), Api.getTransferencias(), Api.getRutas()
@@ -695,7 +639,6 @@
       llenarSelect($('empresa-sector'), catalogos.sectores);
       llenarSelect($('empresa-tamano'), catalogos.tamanosEmpresa);
 
-      // Ciudades sugeridas (sin "Remoto": una persona vive en una ciudad real)
       catalogos.ciudades.filter(function (c) { return c !== 'Remoto'; }).forEach(function (c) {
         const o = document.createElement('option');
         o.value = c;

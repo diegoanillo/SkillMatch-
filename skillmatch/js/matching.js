@@ -232,29 +232,31 @@
     let sumaPesos = 0;
 
     const desglose = requisitos.map(function (req) {
+      // FORZAMOS A QUE SEAN NÚMEROS
+      const nivelReq = Number(req.nivel) || 5; 
+      
       const ef = nivelEfectivo(req.nombre, habilidades, transferencias || []);
       const obligatoria = req.obligatoria !== false;
 
-      const creditoActual = Math.min(1, ef.directo / req.nivel);
-      const creditoPotencial = Math.min(1, ef.valor / req.nivel);
+      const creditoActual = Math.min(1, ef.directo / nivelReq);
+      const creditoPotencial = Math.min(1, ef.valor / nivelReq);
       const peso = obligatoria ? CONFIG.PESO_OBLIGATORIA : CONFIG.PESO_OPCIONAL;
 
       sumaActual += creditoActual * peso;
       sumaPotencial += creditoPotencial * peso;
       sumaPesos += peso;
 
-      // Clasificación en uno de 4 estados
       let estado;
-      if (ef.directo >= req.nivel)                                   estado = 'cumple';
-      else if (ef.directo >= CONFIG.UMBRAL_CERCA * req.nivel)        estado = 'parcial';
-      else if (ef.via && ef.valor >= CONFIG.UMBRAL_CERCA * req.nivel) estado = 'transferible';
+      if (ef.directo >= nivelReq)                                   estado = 'cumple';
+      else if (ef.directo >= CONFIG.UMBRAL_CERCA * nivelReq)        estado = 'parcial';
+      else if (ef.via && ef.valor >= CONFIG.UMBRAL_CERCA * nivelReq) estado = 'transferible';
       else                                                           estado = 'brecha';
 
       const via = ef.via && ef.valor > ef.directo ? ef.via : null;
       const fila = {
         nombre: global.Diccionario ? global.Diccionario.canonico(req.nombre) : req.nombre,
         obligatoria: obligatoria,
-        nivelRequerido: req.nivel,
+        nivelRequerido: nivelReq, // <--- Número forzado
         nivelUsuario: ef.directo,
         nivelEfectivo: redondear(ef.valor, 1),
         creditoActual: creditoActual,
@@ -262,18 +264,16 @@
         credito: creditoActual * (1 - CONFIG.PESO_POTENCIAL) + creditoPotencial * CONFIG.PESO_POTENCIAL,
         estado: estado,
         via: via,
-        semanas: semanasParaCerrar(req.nivel, ef.valor, ef.camino)
+        semanas: semanasParaCerrar(nivelReq, ef.valor, ef.camino)
       };
       fila.explicacion = explicar(fila, !!opciones.tercera);
       return fila;
     });
 
-    // --- Promedios ponderados (0 a 1) ---
     const actual = sumaPesos === 0 ? 0 : sumaActual / sumaPesos;
     const potencial = sumaPesos === 0 ? 0 : sumaPotencial / sumaPesos;
     const base = actual * (1 - CONFIG.PESO_POTENCIAL) + potencial * CONFIG.PESO_POTENCIAL;
 
-    // --- Penalización suave por experiencia ---
     let aniosFaltantes = 0;
     if (typeof opciones.experienciaMin === 'number' && typeof opciones.experienciaAnios === 'number') {
       aniosFaltantes = Math.max(0, opciones.experienciaMin - opciones.experienciaAnios);
@@ -281,9 +281,8 @@
     const penalizacion = Math.min(aniosFaltantes * CONFIG.PENALIZ_POR_ANIO, CONFIG.PENALIZ_MAXIMA);
     const factorExperiencia = 1 - penalizacion;
 
-    const puntaje = Math.round(base * factorExperiencia * 100);
+    const puntaje = Math.round(base * factorExperiencia * 100) || 0; // Si es NaN, se vuelve 0
 
-    // --- Listas útiles para las pantallas ---
     const brechas = desglose.filter(function (d) { return d.estado === 'brecha'; });
     const porMejorar = desglose.filter(function (d) { return d.estado === 'parcial' || d.estado === 'transferible'; });
     const cumplidas = desglose.filter(function (d) { return d.estado === 'cumple'; });
@@ -291,8 +290,8 @@
 
     return {
       puntaje: puntaje,
-      puntajeActual: Math.round(actual * 100),
-      puntajePotencial: Math.round(potencial * 100),
+      puntajeActual: Math.round(actual * 100) || 0,
+      puntajePotencial: Math.round(potencial * 100) || 0,
       nivel: nivelDePuntaje(puntaje),
       desglose: desglose,
       brechas: brechas,

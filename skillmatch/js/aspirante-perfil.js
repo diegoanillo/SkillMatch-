@@ -1,23 +1,5 @@
 /* ============================================================
    aspirante-perfil.js  →  LA VISTA "MI PERFIL" (RF-01)
-   ============================================================
-   Aquí la persona mantiene al día lo que alimenta TODOS sus
-   resultados. Permite:
-
-     1. Editar sus datos (nombre, estudios, cargo, experiencia, ciudad)
-        y escribir "Sobre mí" con sus propias palabras.
-     2. Cambiar el nivel de una habilidad con una barra.
-     3. Quitar habilidades.
-     4. Agregar habilidades buscándolas en la lista, o creando una nueva.
-     5. "Detectar habilidades" en su descripción (el análisis del Punto 3),
-        eligiendo cuáles agregar.
-
-   Cada vez que algo cambia se avisa cómo afectó a su compatibilidad
-   ("pasó de 67 % a 72 %"): así se ve para qué sirve mantener el perfil al día.
-
-   Como todas las vistas, esta NO guarda nada por su cuenta: le pide a
-   Api y luego llama Aspirante.recargar(), que vuelve a calcular y a
-   dibujar todo (Panel, notificaciones, etc.).
    ============================================================ */
 
 (function () {
@@ -31,31 +13,17 @@
   const CATEGORIA_UNA = { technical: 'Técnica', soft: 'Blanda', domain: 'De dominio' };
   const MAX_SOBRE_MI = 500;
 
-
-  // ============================================================
-  // 1. ESTADO LOCAL DE ESTA VISTA
-  // ------------------------------------------------------------
-  // Lo que la vista recuerda entre un dibujo y otro. Es necesario
-  // porque el armazón redibuja la vista cada vez que algo cambia
-  // (por ejemplo, si se marca una notificación como leída): sin
-  // esto, perderíamos lo que la persona estaba escribiendo.
-  // ============================================================
   const local = {
-    filtro: 'todas',        // pestaña de categoría activa
-    borrador: null,         // datos del formulario con cambios SIN guardar (o null)
-    busqueda: '',           // lo escrito en el buscador de habilidades
-    nuevaPendiente: null,   // habilidad desconocida que espera que elijan su categoría
-    propuestas: null,       // resultado de "Detectar habilidades": { items, avisos, yaTenia }
-    focoPendiente: null,    // control que debe recibir el foco después de dibujar
-    cola: Promise.resolve() // fila de acciones (ver enCola)
+    filtro: 'todas',
+    borrador: null,
+    busqueda: '',
+    nuevaPendiente: null,
+    propuestas: null,
+    focoPendiente: null,
+    cola: Promise.resolve()
   };
-  let ultimoEstado = null;  // el último "estado" recibido del armazón
+  let ultimoEstado = null;
 
-
-  // ============================================================
-  // 2. DATOS DEL FORMULARIO
-  // ============================================================
-  // Los valores guardados del perfil, listos para el formulario
   function datosGuardados(est) {
     return {
       nombre: est.sesion.nombre,
@@ -67,7 +35,6 @@
     };
   }
 
-  // Lo que hay ahora mismo escrito en el formulario
   function leerFormulario() {
     return {
       nombre: $('perfil-nombre').value,
@@ -83,18 +50,9 @@
     return Object.keys(a).every(function (k) { return String(a[k]).trim() === String(b[k]).trim(); });
   }
 
-
-  // ============================================================
-  // 3. AYUDAS: foco, cola de acciones y aviso de impacto
-  // ============================================================
-
-  // Conservar el foco al redibujar (ver aspirante-ui.js)
   const recordarFoco = AspiranteUI.recordarFoco;
   const restaurarFoco = AspiranteUI.restaurarFoco;
 
-  // Las acciones se ejecutan UNA tras otra. Si alguien mueve una barra muy
-  // rápido, no se pisan entre sí. Si una falla, avisamos y volvemos a cargar
-  // los datos reales para que la pantalla no quede mostrando algo falso.
   function enCola(accion) {
     local.cola = local.cola.then(accion).catch(function (error) {
       Comun.mostrarToast(error.message, 'error');
@@ -103,16 +61,13 @@
     return local.cola;
   }
 
-  // Aviso de cuánto cambió la compatibilidad (ver aspirante-ui.js)
   const fotoImpacto = AspiranteUI.fotoImpacto;
   const avisarImpacto = AspiranteUI.avisarImpacto;
-
 
   // ============================================================
   // 4. HTML: DATOS PERSONALES
   // ============================================================
   function opcionesSelect(lista, seleccionado) {
-    // Si el valor guardado no está en la lista (datos antiguos), lo agregamos para no perderlo
     const opciones = lista.slice();
     if (seleccionado && opciones.indexOf(seleccionado) < 0) opciones.push(seleccionado);
     return '<option value="">Selecciona…</option>' + opciones.map(function (o) {
@@ -156,13 +111,12 @@
         '<p class="form-error" id="perfil-error" role="alert" hidden></p>' +
 
         '<div class="perfil-acciones">' +
-          '<button type="submit" class="btn btn-primary" id="perfil-guardar"' + (hayCambios ? '' : ' disabled') + '>Guardar cambios</button>' +
+          '<button type="submit" class="btn btn-primary" id="perfil-guardar"' + (hayCambios ? '' : ' disabled') + '>Guardar datos</button>' +
           '<button type="button" class="btn btn-secondary" id="perfil-descartar" data-accion="descartar"' + (hayCambios ? '' : ' hidden') + '>Descartar</button>' +
           '<span class="estado-texto" id="perfil-sin-guardar"' + (hayCambios ? '' : ' hidden') + '>Tienes cambios sin guardar</span>' +
         '</div>' +
       '</form></div>';
   }
-
 
   // ============================================================
   // 5. HTML: HABILIDADES
@@ -190,7 +144,6 @@
       }).join('') + '</div>';
   }
 
-  // El bloque "Añadir una habilidad": buscador, o (si la habilidad es desconocida) elegir su categoría
   function htmlAgregar(est) {
     let contenido;
     if (local.nuevaPendiente) {
@@ -279,6 +232,14 @@
       htmlAgregar(est) +
       '<div class="hab-detectar"><button type="button" class="btn btn-secondary btn-sm" data-accion="detectar">Detectar en mi descripción</button>' +
       '<span class="estado-texto" id="perfil-estado-detectar" role="status"></span></div>' +
+
+       // --- BOTÓN GUARDAR HABILIDADES ---
+      '<div class="perfil-acciones" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 20px;">' +
+        '<button type="button" class="btn btn-primary" data-accion="guardar-habilidades" id="btn-guardar-habilidades" disabled>Guardar cambios</button>' +
+        '<span class="estado-texto" id="perfil-sin-guardar-hab" hidden>Tienes cambios sin guardar</span>' +
+      '</div>' +
+      // ---------------------------------
+      
     '</div>';
   }
 
@@ -292,7 +253,6 @@
     const foco = recordarFoco(cont);
 
     const guardados = datosGuardados(est);
-    // Si quedó un borrador (cambios sin guardar) igual a lo guardado, ya no es borrador
     if (local.borrador && iguales(local.borrador, guardados)) local.borrador = null;
     const datos = local.borrador || guardados;
 
@@ -301,7 +261,6 @@
       '<div class="perfil-col">' + htmlPropuestas() + htmlHabilidades(est) + '</div>' +
     '</div>';
 
-    // Devolvemos el foco: a un control concreto si lo pedimos, o al que tenía antes
     if (local.focoPendiente) {
       let el = null;
       cont.querySelectorAll('[data-foco]').forEach(function (e) { if (e.dataset.foco === local.focoPendiente) el = e; });
@@ -315,21 +274,15 @@
 
   // ============================================================
   // 7. ACCIONES
-  // ------------------------------------------------------------
-  // "Delegación de eventos": un solo escuchador por tipo de evento en
-  // el contenedor atiende todos los controles, aunque se vuelvan a dibujar.
   // ============================================================
   const cont = $(CONTENEDOR);
 
-  // ---------- 7.1 Datos personales ----------
   function mostrarErrorForm(mensaje, idCampo) {
     $('perfil-error').textContent = mensaje;
     $('perfil-error').hidden = false;
     if (idCampo) { $(idCampo).classList.add('has-error'); $(idCampo).focus(); }
   }
 
-  // Cada vez que se escribe algo, guardamos el borrador y actualizamos los botones
-  // SIN redibujar (así el cursor no se mueve).
   cont.addEventListener('input', function (evento) {
     const t = evento.target;
 
@@ -346,18 +299,21 @@
       return;
     }
 
-    // Buscador de habilidades: solo actualiza las sugerencias
     if (t.id === 'perfil-buscar') {
       local.busqueda = t.value;
       $('perfil-sugerencias').innerHTML = htmlSugerencias(ultimoEstado);
       return;
     }
 
-    // Barras de nivel: mientras se arrastran, solo cambia el texto (se guarda al soltar)
     if (t.dataset.campo === 'nivel' || t.dataset.campo === 'nivel-propuesta') {
       const nivel = Number(t.value);
       t.parentNode.querySelector('output').textContent = nivel + ' · ' + Comun.etiquetaNivel(nivel);
       if (t.dataset.campo === 'nivel-propuesta') local.propuestas.items[Number(t.closest('.propuesta-row').dataset.i)].nivel = nivel;
+      
+      if (t.dataset.campo === 'nivel') {
+        $('btn-guardar-habilidades').disabled = false;
+        $('perfil-sin-guardar-hab').hidden = false;
+      }
     }
   });
 
@@ -392,7 +348,6 @@
     }
   });
 
-  // ---------- 7.2 Clics (botones de toda la vista) ----------
   cont.addEventListener('click', function (evento) {
     const boton = evento.target.closest('[data-accion]');
     if (!boton || boton.disabled) return;
@@ -400,10 +355,8 @@
     const fila = boton.closest('.hab-row');
 
     if (accion === 'descartar') { local.borrador = null; dibujar(ultimoEstado); return; }
-
     if (accion === 'filtro') { local.filtro = boton.dataset.filtro; dibujar(ultimoEstado); return; }
 
-    // Quitar pide una segunda confirmación (el primer clic solo "arma" el botón)
     if (accion === 'quitar') {
       if (!AspiranteUI.armarConfirmacion(boton, '¿Quitar?')) return;
       const nombre = fila.dataset.nombre;
@@ -418,40 +371,33 @@
     }
 
     if (accion === 'agregar') { agregarHabilidad(boton.dataset.nombre, null); return; }
-
     if (accion === 'nueva') { local.nuevaPendiente = boton.dataset.nombre; dibujar(ultimoEstado); return; }
     if (accion === 'cancelar-nueva') { local.nuevaPendiente = null; dibujar(ultimoEstado); return; }
     if (accion === 'categoria-nueva') { agregarHabilidad(local.nuevaPendiente, boton.dataset.categoria); return; }
-
     if (accion === 'detectar') { detectar(boton); return; }
-
     if (accion === 'propuesta-cerrar') { local.propuestas = null; dibujar(ultimoEstado); return; }
     if (accion === 'propuesta-agregar') { agregarPropuestas(); return; }
+    
+    // --- ACCIÓN GUARDAR HABILIDADES ---
+    if (accion === 'guardar-habilidades') {
+      guardarHabilidades(boton);
+      return;
+    }
+    // ---------------------------------
   });
 
-  // Soltar una barra de nivel = guardar ese nivel
   cont.addEventListener('change', function (evento) {
     const t = evento.target;
 
-    if (t.dataset.campo === 'nivel') {
-      const nombre = t.closest('.hab-row').dataset.nombre;
-      const nivel = Number(t.value);
-      enCola(async function () {
-        const antes = fotoImpacto();
-        await Api.actualizarHabilidad(nombre, nivel);
-        await Aspirante.recargar();
-        avisarImpacto(antes, 'Nivel de «' + nombre + '» actualizado.');
-      });
-      return;
-    }
+    // NOTA: Se ha eliminado el guardado automático de las barras de nivel.
+    // Ahora se guardan todas juntas con el botón "Guardar cambios".
 
     if (t.dataset.campo === 'marcar') {
       local.propuestas.items[Number(t.closest('.propuesta-row').dataset.i)].marcada = t.checked;
-      dibujar(ultimoEstado);   // actualiza el contador del botón "Agregar seleccionadas (n)"
+      dibujar(ultimoEstado);
     }
   });
 
-  // Enter en el buscador agrega la primera sugerencia (sin esto, no haría nada útil)
   cont.addEventListener('keydown', function (evento) {
     if (evento.key !== 'Enter' || evento.target.id !== 'perfil-buscar') return;
     evento.preventDefault();
@@ -459,8 +405,6 @@
     if (primera) primera.click();
   });
 
-
-  // ---------- 7.3 Agregar una habilidad (de la lista o nueva) ----------
   function agregarHabilidad(nombre, categoria) {
     const oficial = Diccionario.canonico(nombre);
     enCola(async function () {
@@ -468,13 +412,12 @@
       await Api.agregarHabilidad({ nombre: nombre, nivel: 5, categoria: categoria || undefined });
       local.busqueda = '';
       local.nuevaPendiente = null;
-      local.focoPendiente = 'hab:' + oficial;        // el foco irá a la barra de la habilidad nueva
+      local.focoPendiente = 'hab:' + oficial;
       await Aspirante.recargar();
       avisarImpacto(antes, 'Agregaste «' + oficial + '» con nivel 5. Ajusta su nivel con la barra.');
     });
   }
 
-  // ---------- 7.4 Detectar habilidades en "Sobre mí" ----------
   async function detectar(boton) {
     const texto = (local.borrador || datosGuardados(ultimoEstado)).sobreMi;
     if (texto.trim() === '') {
@@ -486,7 +429,6 @@
     boton.disabled = true;
     $('perfil-estado-detectar').textContent = 'Analizando…';
     try {
-      // Api.analizarPerfil: hoy usa reglas; con el backend usará la IA real (mismo formato)
       const r = await Api.analizarPerfil(texto);
       const yaTiene = ultimoEstado.perfil.habilidades.map(function (h) { return Diccionario.norm(Diccionario.canonico(h.nombre)); });
 
@@ -501,7 +443,6 @@
     dibujar(ultimoEstado);
   }
 
-  // Agrega, una por una, las propuestas marcadas
   function agregarPropuestas() {
     const elegidas = local.propuestas.items.filter(function (i) { return i.marcada; });
     enCola(async function () {
@@ -519,8 +460,42 @@
     });
   }
 
+  // --- NUEVA FUNCIÓN PARA GUARDAR TODAS LAS HABILIDADES ---
+  async function guardarHabilidades(boton) {
+    boton.disabled = true;
+    const estadoEl = $('perfil-sin-guardar-hab');
+    estadoEl.textContent = 'Guardando...';
+    estadoEl.hidden = false;
 
-  // Nos registramos en el armazón: él llama a dibujar() con los datos cada vez que hay cambios
+    try {
+      const filas = document.querySelectorAll('.hab-row');
+      const promesas = [];
+      const antes = fotoImpacto();
+
+      // Recorremos todas las barras para obtener su valor actual
+      filas.forEach(function (fila) {
+        const nombre = fila.dataset.nombre;
+        const input = fila.querySelector('input[type="range"]');
+        if (input) {
+          const nivel = Number(input.value);
+          promesas.push(Api.actualizarHabilidad(nombre, nivel));
+        }
+      });
+
+      // Esperamos a que todas se guarden
+      await Promise.all(promesas);
+      
+      await Aspirante.recargar();
+      avisarImpacto(antes, 'Habilidades guardadas correctamente.');
+      
+    } catch (error) {
+      Comun.mostrarToast(error.message, 'error');
+      boton.disabled = false;
+      estadoEl.textContent = 'Error al guardar';
+    }
+  }
+  // ---------------------------------------------------------
+
   Aspirante.registrarVista('perfil', dibujar);
 
 })();

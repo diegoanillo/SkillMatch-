@@ -144,7 +144,8 @@ def asociar_habilidad_usuario(
         )
 
     asociacion_existente = db.query(UsuarioHabilidad).filter(
-        UsuarioHabilidad.usuario_id == datos.habilidad_id
+        UsuarioHabilidad.usuario_id == datos.usuario_id,     # <--- CORREGIDO
+        UsuarioHabilidad.habilidad_id == datos.habilidad_id  # <--- CORREGIDO
     ).first()
 
     if asociacion_existente:
@@ -196,14 +197,13 @@ def listar_habilidades_usuario(
         UsuarioHabilidad.usuario_id == usuario_id
     ).all()
 
-# Actualizar el nivel de una habilidad asociada
 @router.put(
     "/usuarios/asociaciones/{asociacion_id}",
     response_model=UsuarioHabilidadResponse
 )
 def actualizar_nivel_habilidad(
     asociacion_id: int,
-    datos: UsuarioHabilidadCreate,
+    datos: UsuarioHabilidadCreate, # <--- Usa este esquema
     db: Session = Depends(get_db)
 ):
     asociacion = db.query(UsuarioHabilidad).filter(
@@ -211,21 +211,15 @@ def actualizar_nivel_habilidad(
     ).first()
 
     if not asociacion:
-        raise HTTPException(
-            status_code=404,
-            detail="Asociacion no encontrada"
-        )
+        raise HTTPException(status_code=404, detail="Asociacion no encontrada")
 
     if (
         asociacion.usuario_id != datos.usuario_id
         or asociacion.habilidad_id != datos.habilidad_id
     ):
-        raise HTTPException(
-            status_code=400,
-            detail="Los IDs de usuario y habilidad no coinciden"
-        )
+        raise HTTPException(status_code=400, detail="Los IDs de usuario y habilidad no coinciden")
 
-    asociacion.nivel = datos.nivel
+    asociacion.nivel = datos.nivel # <--- Asignación directa
 
     db.commit()
     db.refresh(asociacion)

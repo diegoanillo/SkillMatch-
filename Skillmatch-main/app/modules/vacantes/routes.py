@@ -20,13 +20,13 @@ from sentence_transformers import util
 
 router = APIRouter(prefix="/vacantes", tags=["Vacantes"])
 
-# --- ESQUEMAS (Deben ir arriba para que Python los lea primero) ---
+# --- ESQUEMAS ---
 class EmpresaNombreResponse(BaseModel):
     nombre: str
 
 class HabilidadInput(BaseModel):
     nombre: str
-    nivel: Optional[str] = "Intermedio"
+    nivel: Optional[int] = 5
 
 class VacanteCreateCompleta(BaseModel):
     titulo: str
@@ -57,29 +57,23 @@ def obtener_empresa_de_vacante(vacante_id: int, db: Session = Depends(get_db)):
 
 @router.post("/alcance")
 def estimar_alcance(datos: AlcanceRequest, db: Session = Depends(get_db)):
-    # 1. Obtener todos los aspirantes
     aspirantes = db.query(Usuario).filter(Usuario.tipo_usuario == "ASPIRANTE").all()
     total = len(aspirantes)
     
     if total == 0:
         return {"total": 0, "alta": 0, "media": 0, "baja": 0}
 
-    # 2. Obtener los nombres de las habilidades requeridas
     req_nombres = [h.nombre for h in datos.habilidades if h.nombre]
     
     if not req_nombres:
         return {"total": total, "alta": 0, "media": 0, "baja": 0}
 
-    # 3. Cargar el modelo de IA (Sentence Transformers) que ya usa el backend
     modelo = obtener_modelo()
-    
-    # 4. Pre-calcular los embeddings de las habilidades requeridas
     embeddings_req = modelo.encode(req_nombres, convert_to_tensor=True, normalize_embeddings=True)
 
     conteo = {"total": total, "alta": 0, "media": 0, "baja": 0}
     
     for aspirante in aspirantes:
-        # Obtener las habilidades del aspirante
         habs_usuario = db.query(Habilidad.nombre).join(
             UsuarioHabilidad, UsuarioHabilidad.habilidad_id == Habilidad.id
         ).filter(UsuarioHabilidad.usuario_id == aspirante.id).all()
@@ -90,19 +84,14 @@ def estimar_alcance(datos: AlcanceRequest, db: Session = Depends(get_db)):
             conteo["baja"] += 1
             continue
             
-        # Calcular embeddings de las habilidades del aspirante
         embeddings_user = modelo.encode(nombres_usuario, convert_to_tensor=True, normalize_embeddings=True)
-        
-        # Calcular matriz de similitud (requisitos vs habilidades del aspirante)
         matriz = util.cos_sim(embeddings_req, embeddings_user)
         
-        # Contar cuántos requisitos tienen una similitud >= 0.55 (el umbral que usa el backend)
         coincidencias = (matriz.max(dim=1).values >= 0.55).sum().item()
         
-        # Lógica de clasificación (similar a la que tenías, pero basada en similitud)
-        if coincidencias >= len(req_nombres) / 2:  # Si cumple al menos la mitad de los requisitos
+        if coincidencias >= len(req_nombres) / 2:
             conteo["alta"] += 1
-        elif coincidencias > 0:  # Si cumple al menos uno
+        elif coincidencias > 0:
             conteo["media"] += 1
         else:
             conteo["baja"] += 1
@@ -267,10 +256,22 @@ class TextoRequest(BaseModel):
     texto: str
 
 @router.post("/analizar")
-def analizar_texto_vacante(datos: TextoRequest):
+def analizar_texto_vacante(datos: TextoRequest, db: Session = Depends(get_db)):
+    habilidades_db = db.query(Habilidad.nombre).all()
+    lista_habilidades = [h[0] for h in habilidades_db]
+    
+    catalogo_str = ", ".join(lista_habilidades)
+
     prompt = f"""
-Eres un asistente experto en recursos humanos. Analiza la siguiente descripción de una vacante y extrae las habilidades requeridas.
-Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta:
+Eres un asistente experto en recursos humanos de la plataforma SkillMatch.
+Analiza la siguiente descripción de una vacante y extrae las habilidades requeridas.
+
+REGLAS ESTRICTAS:
+1. Debes elegir las habilidades EXCLUSIVAMENTE de este catálogo oficial:
+[{catalogo_str}]
+2. Si el texto menciona un sinónimo o término coloquial (ej: "hojas de cálculo"), debes devolver el nombre oficial del catálogo (ej: "Excel").
+3. Si el texto menciona una habilidad que NO está en el catálogo, puedes inventarla con un nombre corto y técnico.
+4. Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura:
 {{
     "cargoDetectado": "Nombre del cargo o null",
     "experienciaMin": 0,
@@ -281,11 +282,6 @@ Devuelve ÚNICAMENTE un objeto JSON válido con esta estructura exacta:
     "resumen": "Breve resumen de lo que pide la vacante",
     "advertencias": []
 }}
-
-REGLAS IMPORTANTES PARA LAS HABILIDADES:
-1. Usa nombres CORTOS y TÉCNICOS (Ej: "Excel" en lugar de "manejo de hojas de cálculo", "SQL" en lugar de "bases de datos relacionales", "Power BI", "Python").
-2. Si el texto menciona herramientas específicas, úsalas tal cual.
-3. Si es una habilidad blanda, usa el término estándar (Ej: "Trabajo en equipo", "Liderazgo").
 
 Texto de la vacante:
 "{datos.texto}"

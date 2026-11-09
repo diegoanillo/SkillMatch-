@@ -2,12 +2,15 @@ from app.database.connection import SessionLocal, Base, engine
 from app.modules.usuarios.models import Usuario
 from app.modules.perfiles.models import Perfil
 from app.modules.habilidades.models import Habilidad, UsuarioHabilidad
-from app.core.security import hashear_password
+from app.modules.usuarios.catalogos import Catalogo
+from app.modules.vacantes.models import Vacante, VacanteHabilidad
+from app.modules.cursos.models import Curso, CursoHabilidad
 from app.modules.usuarios.empresa import Empresa
-
-
+from app.core.security import hashear_password
+from app.modules.chat.models import Mensaje
 
 Base.metadata.create_all(bind=engine)
+
 db = SessionLocal()
 
 print("Creando usuarios...")
@@ -42,11 +45,11 @@ if not perfil:
 
 print("Creando habilidades base y asociándolas a María...")
 habilidades_base = [
-    ("Excel", "Avanzado"),
-    ("SQL", "Intermedio"),
-    ("Power BI", "Básico"),
-    ("Análisis de datos", "Intermedio"),
-    ("Comunicación", "Avanzado")
+    ("Excel", 8),
+    ("SQL", 6),
+    ("Power BI", 3),
+    ("Análisis de datos", 5),
+    ("Comunicación", 8)
 ]
 
 for nombre_hab, nivel in habilidades_base:
@@ -67,7 +70,6 @@ for nombre_hab, nivel in habilidades_base:
         db.add(nueva_asoc)
         db.commit()
 
-print("¡Listo! Usuarios y perfil de María creados con éxito.")
 
 print("Creando empresa de Carlos...")
 carlos = usuarios_db["reclutador@skillmatch.com"]
@@ -83,4 +85,4 @@ if not empresa_existente:
     db.commit()
 
 db.close()
-print("¡Listo! Usuarios, perfil de María y empresa de Carlos creados.")
+print("¡Listo! Tablas creadas y usuarios de prueba listos.")

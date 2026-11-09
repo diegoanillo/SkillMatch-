@@ -1,9 +1,8 @@
 
-
 from fastapi import FastAPI
-
 from app.database.connection import Base, engine
-
+from app.modules.chat import models as chat_models
+from app.modules.chat.routes import router as chat_router
 from app.modules.interacciones import models as interacciones_models
 from app.modules.interacciones.routes import router as interacciones_router
 from app.modules.cursos import models as cursos_models
@@ -65,6 +64,7 @@ app.include_router(auth_router)
 app.include_router(interacciones_router)
 app.include_router(cursos_router)
 app.include_router(catalogos_router)
+app.include_router(chat_router)
 
 @app.get("/")
 def inicio():

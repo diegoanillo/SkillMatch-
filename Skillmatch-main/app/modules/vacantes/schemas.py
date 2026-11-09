@@ -1,7 +1,8 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, field_validator
 from typing import Optional
 from datetime import datetime
 from decimal import Decimal
+import re
 
 class VacanteCreate(BaseModel):
     titulo: str
@@ -12,6 +13,11 @@ class VacanteCreate(BaseModel):
     salario_min: Optional[Decimal]= None
     salario_max: Optional[Decimal]= None
 
+    @field_validator('ubicacion')
+    def validar_ubicacion(cls, v):
+        if v is not None and re.search(r'\d', v):
+            raise ValueError('La ubicación no puede contener números.')
+        return v
 
 class VacanteResponse(BaseModel):
     id: int 
@@ -30,12 +36,11 @@ class VacanteResponse(BaseModel):
 
 class VacanteHabilidadCreate(BaseModel):
     habilidad_id: int
-    nivel_requerido: Optional[str] = None
+    nivel_requerido: Optional[int] = None
 
 class VacanteHabilidadResponse(BaseModel):
     id: int
     vacante_id: int
     habilidad_id: int
-    nivel_requerido: Optional[str] = None
-
+    nivel_requerido: Optional[int] = None  
     model_config = ConfigDict(from_attributes=True)

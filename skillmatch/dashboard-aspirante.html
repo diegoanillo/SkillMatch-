@@ -170,6 +170,19 @@
         </div>
       </section>
 
+        <!-- VENTANA DE CHAT FLOTANTE -->
+  <div class="chat-widget" id="chat-widget" hidden>
+    <div class="chat-header">
+      <span id="chat-titulo">Chat</span>
+      <button type="button" class="icon-btn icon-btn--sm" id="chat-cerrar" aria-label="Cerrar chat">&times;</button>
+    </div>
+    <div class="chat-body" id="chat-mensajes"></div>
+    <div class="chat-footer">
+      <input type="text" id="chat-input" placeholder="Escribe un mensaje..." autocomplete="off">
+      <button type="button" class="btn btn-primary btn-sm" id="chat-enviar">Enviar</button>
+    </div>
+  </div>
+
       <!-- ======================================================
            VISTAS PENDIENTES: se reemplazan en los puntos 7, 8 y 9.
            ====================================================== -->
@@ -220,6 +233,7 @@
   <script src="js/aspirante-panel.js"></script>
   <script src="js/aspirante-perfil.js"></script>
   <script src="js/aspirante-empleos.js"></script>
+  <script src="js/chat.js"></script>
   <script src="js/aspirante-gps.js"></script>
   <script src="js/aspirante-recos.js"></script>
 </body>
