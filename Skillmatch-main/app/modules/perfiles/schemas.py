@@ -19,7 +19,6 @@ class PerfilCreate(BaseModel):
             raise ValueError('La ciudad no puede contener números.')
         return v
 
-# Haz lo mismo para PerfilUpdate
 class PerfilUpdate(BaseModel):
     resumen_profesional: Optional[str] = None
     formacion_academica: Optional[str] = None
@@ -47,4 +46,5 @@ class PerfilResponse(BaseModel):
     portafolio: Optional[str] = None
     ruta_meta_id: Optional[str] = None
     oferta_objetivo_id: Optional[str] = None
+    
     model_config = ConfigDict(from_attributes=True)

@@ -43,14 +43,21 @@
   // ============================================================
   // 1. CALCULAR LAS RECOMENDACIONES
   // ============================================================
-  function calcular(est) {
-    // El paso actual del Career GPS de su meta (si tiene meta)
-    const ruta = est.rutas.find(function (r) { return r.id === est.perfil.rutaMetaId; });
-    const pasoActual = ruta ? CareerGPS.generar(ruta, est.perfil, est.transferencias).pasoActual : null;
-
-    const necesidades = Recomendador.necesidades(est.objetivo, pasoActual);
+    function calcular(est) {
+    // 1. Si hay una meta elegida (oferta_objetivo_id), esa es la única referencia
+    const esMeta = est.objetivo && est.objetivo.empleo.id === String(est.perfil.ofertaObjetivoId);
+    
+    // Solo calculamos necesidades basadas en la oferta de referencia (la meta)
+    const necesidades = esMeta ? Recomendador.necesidades(est.objetivo, null) : [];
+    
+    // Evaluamos los cursos basándonos solo en esas necesidades
     const filas = Recomendador.evaluar(est.cursos, est.perfil, necesidades, est.objetivo, est.transferencias);
-    return { necesidades: necesidades, filas: filas, pasoActual: pasoActual };
+    
+    return { 
+      necesidades: necesidades, 
+      filas: filas, 
+      pasoActual: null // Ya no usamos el paso del GPS antiguo
+    };
   }
 
   // Qué filas pertenecen a cada pestaña

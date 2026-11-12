@@ -559,11 +559,13 @@
     const sesion = sesionActual();
     if (!sesion) throw new Error('Tu sesión expiró.');
 
-    await fetch(`http://127.0.0.1:8000/perfiles/${sesion.id}`, {
+    const res = await fetch(`http://127.0.0.1:8000/perfiles/${sesion.id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ oferta_objetivo_id: String(empleoId) })
     });
+
+    if (!res.ok) throw new Error('No se pudo guardar la meta.'); // <--- Agregado para detectar errores
 
     return await getPerfil();
   }

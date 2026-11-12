@@ -151,7 +151,7 @@
 
       recurso.habilidades.forEach(function (h) {
         const n = porClave[clave(h.nombre)];
-        if (!n) return;
+        if (!n) return; // Si la habilidad del curso no está en las necesidades, se ignora
         relevancia += Math.min(h.boost, n.brecha) * n.peso;
         n.motivos.forEach(function (m) { if (motivos.indexOf(m) < 0) motivos.push(m); });
       });
@@ -167,18 +167,18 @@
       };
     });
 
-    // Prioridad relativa: se compara cada recurso con el MÁS relevante
-    const maxima = filas.reduce(function (m, f) { return Math.max(m, f.relevancia); }, 0);
-    filas.forEach(function (f) {
-      if (f.relevancia <= 0) return;
+    // Filtrar los que no tienen relevancia (es decir, los que no cubren las brechas de la meta)
+    const relevantes = filas.filter(function (f) { return f.relevancia > 0; });
+
+    // Prioridad y orden
+    const maxima = relevantes.reduce(function (m, f) { return Math.max(m, f.relevancia); }, 0);
+    relevantes.forEach(function (f) {
       const proporcion = f.relevancia / maxima;
       f.prioridad = proporcion >= 0.66 ? 3 : (proporcion >= 0.33 ? 2 : 1);
     });
 
-    // Más relevantes primero. Si empatan, el que MÁS sube la compatibilidad;
-    // y si aún empatan, el más corto (menos horas).
     function delta(f) { return f.impacto ? f.impacto.delta : 0; }
-    return filas.sort(function (a, b) {
+    return relevantes.sort(function (a, b) {
       return b.relevancia - a.relevancia || delta(b) - delta(a) || a.recurso.horas - b.recurso.horas;
     });
   }

@@ -68,34 +68,34 @@
   // ============================================================
   async function cargar() {
     // Promise.all pide todo a la vez (más rápido que uno por uno)
-        const r = await Promise.all([
-      Api.getPerfil().catch(() => ({ habilidades: [], postulaciones: [], notificaciones: [], guardadas: [], aprendizaje: {} })), // Si falla, usamos perfil vacío para que no rompa
-      Api.getEmpleos().catch(() => []),
-      Api.getTransferencias().catch(() => []),
-      Api.getRutas().catch(() => []),
-      Api.getCursos().catch(() => []),
-      Api.getCatalogos().catch(() => ({ educacion: [], sectores: [], tamanosEmpresa: [], modalidades: [], niveles: [], ciudades: [] })),
-      Api.getCatalogoHabilidades().catch(() => [])
+    const r = await Promise.all([
+      Api.getPerfil(),              // 0
+      Api.getEmpleos(),             // 1
+      Api.getTransferencias(),      // 2
+      Api.getCursos(),              // 3
+      Api.getCatalogos(),           // 4
+      Api.getCatalogoHabilidades()  // 5
     ]);
-    estado.sesion = Api.sesionActual() || estado.sesion;   // al día (el nombre puede haber cambiado)
+
+    estado.sesion = Api.sesionActual() || estado.sesion;
     estado.perfil = r[0];
     estado.empleos = r[1];
     estado.transferencias = r[2];
-    estado.rutas = r[3];
-    estado.cursos = r[4];
-    estado.catalogos = r[5];
-    estado.catalogoHabilidades = r[6];
+    estado.cursos = r[3];        // <--- AQUÍ ESTÁ LA CORRECCIÓN: ahora sí se guarda en est.cursos
+    estado.catalogos = r[4];
+    estado.catalogoHabilidades = r[5];
+    
+    // (Ya no hay estado.rutas porque ahora usamos las ofertas)
 
-    // Compatibilidad del perfil con CADA oferta (lo hace el motor del punto 2)
+    // Compatibilidad del perfil con CADA oferta
     estado.ranking = Matching.rankearEmpleos(estado.perfil, estado.empleos, estado.transferencias);
 
-        // Oferta de referencia
+    // Oferta de referencia
     const idObjetivo = estado.perfil.ofertaObjetivoId;
     estado.objetivo = idObjetivo 
       ? estado.ranking.find(function (fila) { return fila.empleo.id === String(idObjetivo); })
       : null;
       
-    // Si no se encontró (o no había), usamos la mejor por defecto
     if (!estado.objetivo) {
       estado.objetivo = estado.ranking[0] || null;
     }
@@ -209,16 +209,18 @@
     const primerNombre = estado.sesion.nombre.split(' ')[0];
     $('saludo').textContent = saludoSegunHora() + ', ' + primerNombre;
 
-    // Debajo del saludo: la meta y cuánto se ha avanzado hacia ella. Se ve en TODAS las vistas,
-    // así la persona siente su avance sin tener que entrar al Career GPS.
-    const ruta = estado.rutas.find(function (r) { return r.id === estado.perfil.rutaMetaId; });
-    if (ruta) {
-      const g = CareerGPS.generar(ruta, estado.perfil, estado.transferencias);
+        // Buscar si el aspirante tiene una oferta meta guardada
+    const ofertaMeta = estado.ranking.find(function (f) {
+      return String(f.empleo.id) === String(estado.perfil.ofertaObjetivoId);
+    });
+
+    if (ofertaMeta) {
+      const g = CareerGPS.generar(ofertaMeta.empleo, estado.perfil, estado.transferencias);
       $('saludo-sub').textContent = g.completa
-        ? 'Tu ruta hacia ' + ruta.titulo + ': ¡meta alcanzada!'
-        : 'Tu ruta hacia ' + ruta.titulo + ' · ' + g.meta.progreso + ' % de avance.';
+        ? 'Tu meta hacia ' + ofertaMeta.empleo.titulo + ': ¡Meta alcanzada!'
+        : 'Tu meta hacia ' + ofertaMeta.empleo.titulo + ' · ' + g.meta.progreso + ' % de avance.';
     } else {
-      $('saludo-sub').textContent = 'Aún no has elegido una ruta profesional.';
+      $('saludo-sub').textContent = 'Aún no has elegido una meta profesional.';
     }
 
     $('avatar-btn').textContent = Comun.iniciales(estado.sesion.nombre);

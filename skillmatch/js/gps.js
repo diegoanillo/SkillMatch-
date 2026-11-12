@@ -68,17 +68,15 @@
   // que más sirven para esta ruta (las que la ruta pide, de mayor a
   // menor nivel). Si ninguna coincide, sus habilidades más fuertes.
   // ============================================================
-  function puntoDePartida(ruta, perfil) {
-    const pedidas = {};
-    ruta.pasos.forEach(function (p) { p.requisitos.forEach(function (r) { pedidas[clave(r.nombre)] = true; }); });
-
-    const ordenadas = perfil.habilidades.slice().sort(function (a, b) { return b.nivel - a.nivel; });
-    const utiles = ordenadas.filter(function (h) { return pedidas[clave(h.nombre)]; });
-    const elegidas = (utiles.length > 0 ? utiles : ordenadas).slice(0, 4);
+  function puntoDePartida(vacante, perfil) {
+    // Buscamos cuáles de las habilidades de la vacante ya tiene el usuario
+    const habilidadesPedidas = vacante.habilidades.map(h => h.nombre.toLowerCase());
+    const utiles = perfil.habilidades.filter(h => habilidadesPedidas.includes(h.nombre.toLowerCase()))
+      .sort((a, b) => b.nivel - a.nivel).slice(0, 4);
 
     return {
-      titulo: perfil.cargoActual && perfil.cargoActual.trim() !== '' ? perfil.cargoActual : 'Tu punto de partida',
-      habilidades: elegidas.map(function (h) { return { nombre: h.nombre, nivel: h.nivel }; })
+      titulo: perfil.cargoActual || 'Tu punto de partida',
+      habilidades: utiles.map(h => ({ nombre: h.nombre, nivel: h.nivel }))
     };
   }
 
@@ -90,60 +88,38 @@
   //   transferencias el grafo de habilidades
   //   hoy            (opcional) fecha de referencia; por defecto, ahora
   // ============================================================
-  function generar(ruta, perfil, transferencias, hoy) {
+  function generar(vacante, perfil, transferencias, hoy) {
     hoy = hoy || new Date();
 
-    // Cada paso se evalúa con el mismo motor que las ofertas
-    const pasos = ruta.pasos.map(function (paso, i) {
-      const resultado = Matching.calcular(perfil.habilidades, paso.requisitos, transferencias);
-
-      // "Listo" = todas las habilidades OBLIGATORIAS del paso están cumplidas
-      const listo = resultado.desglose.every(function (d) { return !d.obligatoria || d.estado === 'cumple'; });
-
-      // "progreso" = qué parte de lo que pide este paso ya cumples HOY (0 a 100).
-      // Solo sube cuando subes un nivel: nunca baja por mejorar.
-      return { indice: i, rol: paso.rol, descripcion: paso.descripcion, requisitos: paso.requisitos, resultado: resultado,
-               progreso: listo ? 100 : resultado.puntajeActual, estado: listo ? 'listo' : null };
+    // Evaluamos la vacante como si fuera el "paso final"
+    const resultado = Matching.calcular(perfil.habilidades, vacante.habilidades, transferencias, {
+      experienciaAnios: perfil.experienciaAnios,
+      experienciaMin: vacante.experienciaMin
     });
 
-    // El primer paso que NO está listo es el "actual"; los siguientes quedan "pendientes".
-    let hayActual = false;
-    pasos.forEach(function (paso) {
-      if (paso.estado === 'listo') return;
-      paso.estado = hayActual ? 'pendiente' : 'actual';
-      hayActual = true;
-    });
-
-    const pasosListos = pasos.filter(function (p) { return p.estado === 'listo'; }).length;
-    const completa = pasosListos === pasos.length;
-
-    // Tiempo hasta la meta: lo que falta para cumplir TODOS los requisitos de la ruta
-    const resultadoMeta = Matching.calcular(perfil.habilidades, fusionarRequisitos(ruta.pasos), transferencias);
-    const semanas = completa ? 0 : resultadoMeta.semanas;
-
-    const pasoActual = pasos.find(function (p) { return p.estado === 'actual'; }) || null;
-
-    // POSICIÓN sobre la línea de la ruta, de 0 (punto de partida) a 1 (meta).
-    // Los pasos anteriores al actual están todos "listos" (el actual es el primero que no lo está),
-    // así que la persona está "entre el paso anterior y el actual", avanzada según su progreso en él.
-    // Es lo que se dibuja como el punto "Estás aquí" y el tramo coloreado de la línea.
-    const posicion = completa ? 1 : (pasoActual.indice + pasoActual.progreso / 100) / pasos.length;
+    // Calculamos cuánto le falta para el 100% (brechas)
+    const listo = resultado.puntaje === 100;
 
     return {
-      ruta: { id: ruta.id, titulo: ruta.titulo, descripcion: ruta.descripcion },
-      inicio: puntoDePartida(ruta, perfil),
-      pasos: pasos,
-      pasoActual: pasoActual,
-      pasosListos: pasosListos,
-      completa: completa,
-      posicion: posicion,
+      ruta: { id: vacante.id, titulo: vacante.titulo, descripcion: vacante.descripcion },
+      inicio: puntoDePartida(vacante, perfil), // Adaptaremos esta función
+      pasos: [{ // Simulamos un solo paso: la vacante misma
+        indice: 0,
+        rol: vacante.titulo,
+        descripcion: vacante.descripcion,
+        resultado: resultado,
+        progreso: resultado.puntaje,
+        estado: listo ? 'listo' : 'actual'
+      }],
+      pasoActual: listo ? null : { rol: vacante.titulo, resultado: resultado },
+      pasosListos: listo ? 1 : 0,
+      completa: listo,
+      posicion: resultado.puntaje / 100,
       meta: {
-        resultado: resultadoMeta,
-        // PROGRESO hacia la meta (0 a 100): qué parte de TODO lo que pide la ruta cumples hoy.
-        // Es la cifra principal que ve la persona: sube con cada nivel que mejora.
-        progreso: completa ? 100 : resultadoMeta.puntajeActual,
-        semanas: semanas,
-        fechaLlegada: new Date(hoy.getTime() + semanas * 7 * DIA_MS)
+        resultado: resultado,
+        progreso: resultado.puntaje,
+        semanas: resultado.semanas,
+        fechaLlegada: new Date(hoy.getTime() + resultado.semanas * 7 * 24 * 60 * 60 * 1000)
       }
     };
   }
