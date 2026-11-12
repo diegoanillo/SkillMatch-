@@ -210,6 +210,7 @@
     $('saludo').textContent = saludoSegunHora() + ', ' + primerNombre;
 
         // Buscar si el aspirante tiene una oferta meta guardada
+        // Buscar si el aspirante tiene una oferta meta guardada
     const ofertaMeta = estado.ranking.find(function (f) {
       return String(f.empleo.id) === String(estado.perfil.ofertaObjetivoId);
     });

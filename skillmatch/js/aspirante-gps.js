@@ -76,7 +76,7 @@
 
   // Las ofertas (vacantes) como tarjetas
   function htmlOfertas(est, ofertas, idVista) {
-    const metaId = est.perfil.rutaMetaId;
+    const metaId = est.perfil.ofertaObjetivoId; // <--- Ahora usa el campo correcto
     
     return '<div class="panel"><h2>Ofertas posibles</h2>' +
       '<p class="panel-sub">Calculadas con tus habilidades de hoy. Pulsa una para ver qué te falta para alcanzarla.</p>' +
@@ -113,7 +113,7 @@
 
   // Resumen (métricas y botón para establecer meta)
   function htmlResumen(est, g, desde) {
-    const esMeta = est.perfil.rutaMetaId === g.ruta.id;
+    const esMeta = String(est.perfil.ofertaObjetivoId) === String(g.ruta.id);
     const m = g.meta;
     const av = local.avance && local.avance.rutaId === g.ruta.id ? local.avance : null;
 
