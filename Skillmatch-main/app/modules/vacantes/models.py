@@ -35,6 +35,6 @@ class VacanteHabilidad(Base):
     )
 
     nivel_requerido = Column(
-        String(30),
+        Integer,
         nullable=True
     )    

@@ -299,7 +299,7 @@
     }
     if (visible) { visto[g.ruta.id] = actual; guardarVisto(est, visto); }
 
-    const aviso = !est.perfil.rutaMetaId
+    const aviso = !est.perfil.ofertaObjetivoId
       ? '<div class="panel gps-aviso"><p>Aún no has elegido una meta. Te mostramos las ofertas que mejor encajan contigo: míralas y elige la que quieras con «Establecer como mi meta».</p></div>' : '';
 
     cont.innerHTML = aviso +

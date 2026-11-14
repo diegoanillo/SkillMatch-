@@ -3,34 +3,6 @@
 <head>
   <meta charset="UTF-8">
 
-  <!--
-    ============================================================
-    dashboard-aspirante.html  →  EL PANEL DEL ASPIRANTE
-    ============================================================
-    Es la pantalla donde cae una persona después de iniciar sesión
-    (o de crear su cuenta) como ASPIRANTE.
-  
-    Está hecha a partir de tu prototipo, pero ya no tiene datos
-    escritos a mano: todo se calcula con el perfil real de quien
-    entró, a través de Api, Matching y Diccionario.
-  
-    Estructura ("shell" + vistas):
-      - La barra lateral y la barra superior son el "armazón" y
-        aparecen siempre (las maneja js/aspirante.js).
-      - Cada opción del menú es una "vista" (una <section>). Solo
-        una se ve a la vez. Cada vista tiene su propio archivo JS:
-  
-           Vista            Archivo                     Estado
-           Panel            js/aspirante-panel.js       ✔ listo (punto 6)
-           Mi perfil        js/aspirante-perfil.js      ✔ listo (punto 7)
-           Buscar empleos   js/aspirante-empleos.js     ✔ listo (punto 8)
-           Career GPS       js/aspirante-gps.js         ✔ listo (punto 9)
-           Recomendaciones  js/aspirante-recos.js       ✔ listo (punto 9)
-  
-    Las vistas que aún no están construidas muestran un aviso
-    provisional con un botón para volver al Panel.
-  -->
-
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Panel · SkillMatch</title>
 
@@ -46,12 +18,6 @@
 
 <body>
 
-  <!-- ============================================================
-       BARRA LATERAL: navegación entre vistas
-       Cada botón tiene data-vista="nombre"; coincide con el id
-       "vista-nombre" de la sección que debe mostrar. En pantallas
-       angostas se convierte en una barra inferior.
-       ============================================================ -->
   <nav class="sidebar" aria-label="Navegación principal">
     <div class="brand">
       <svg width="26" height="26" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
